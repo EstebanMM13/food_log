@@ -8,6 +8,12 @@
   A local-first Flutter app for tracking restaurants, dishes and ratings — the restaurant notebook you'd otherwise keep scattered across notes apps, turned into something that actually queries and aggregates your data.
 </p>
 
+<p align="center">
+  <a href="https://github.com/EstebanMM13/food_log/actions/workflows/ci.yml">
+    <img src="https://github.com/EstebanMM13/food_log/actions/workflows/ci.yml/badge.svg" alt="CI status" />
+  </a>
+</p>
+
 ---
 
 ## Why
