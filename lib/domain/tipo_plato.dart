@@ -2,7 +2,7 @@
 /// (`platos.tipo`) always stores the raw display string below, never the
 /// enum name — this keeps imported data (which may contain values that
 /// don't fit this list) readable without ever throwing.
-enum TipoPlato { entrante, principal, postre, cafe, otro }
+enum TipoPlato { entrante, principal, postre, otro }
 
 extension TipoPlatoX on TipoPlato {
   /// Human-readable label, and the exact string persisted to the database.
@@ -14,8 +14,6 @@ extension TipoPlatoX on TipoPlato {
         return 'Principal';
       case TipoPlato.postre:
         return 'Postre';
-      case TipoPlato.cafe:
-        return 'Café';
       case TipoPlato.otro:
         return 'Otro';
     }

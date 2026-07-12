@@ -46,12 +46,11 @@ class RestauranteDetailScreen extends ConsumerWidget {
         ? null
         : platos.map((p) => p.puntuacion).reduce((a, b) => a + b) / platos.length;
 
-    // Group dishes by category for the accordion sections. "Postres" bundles
-    // TipoPlato.postre and TipoPlato.cafe together per the mockup. Dishes
-    // whose type doesn't match a fixed TipoPlato are matched against
-    // user-defined categories by name; only if none match do they fall back
-    // to "Otros" (covers orphaned dishes from a deleted category, or
-    // imported data that doesn't fit any known type).
+    // Group dishes by category for the accordion sections. Dishes whose type
+    // doesn't match a fixed TipoPlato are matched against user-defined
+    // categories by name; only if none match do they fall back to "Otros"
+    // (covers orphaned dishes from a deleted category, or imported data that
+    // doesn't fit any known type).
     final entrantes = <Plato>[];
     final principales = <Plato>[];
     final postres = <Plato>[];
@@ -66,7 +65,6 @@ class RestauranteDetailScreen extends ConsumerWidget {
         case TipoPlato.principal:
           principales.add(plato);
         case TipoPlato.postre:
-        case TipoPlato.cafe:
           postres.add(plato);
         case TipoPlato.otro:
           Categoria? categoriaCoincidente;
@@ -265,14 +263,13 @@ class RestauranteDetailScreen extends ConsumerWidget {
               onEliminarCategoria: () =>
                   ref.read(categoriaRepositoryProvider).delete(categoria.id),
             ),
-          if (otros.isNotEmpty)
-            CategoriaPlatosSection(
-              label: 'Otros',
-              platos: otros,
-              tipoParaAnadir: TipoPlato.otro,
-              restauranteId: restauranteId,
-              onEliminar: eliminarPlato,
-            ),
+          CategoriaPlatosSection(
+            label: 'Otros',
+            platos: otros,
+            tipoParaAnadir: TipoPlato.otro,
+            restauranteId: restauranteId,
+            onEliminar: eliminarPlato,
+          ),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
@@ -306,6 +303,11 @@ class RestauranteDetailScreen extends ConsumerWidget {
               onChanged: (value) => ref
                   .read(recordatorioRepositoryProvider)
                   .setHecho(recordatorio.id, value ?? false),
+              secondary: IconButton(
+                icon: const Icon(Icons.delete_outline),
+                tooltip: 'Eliminar recordatorio',
+                onPressed: () => _confirmarEliminarRecordatorio(context, ref, recordatorio.id),
+              ),
             ),
         ],
       ),
@@ -366,6 +368,32 @@ class RestauranteDetailScreen extends ConsumerWidget {
     );
     if (nuevoValor != null && nuevoValor >= 0) {
       await ref.read(restauranteRepositoryProvider).setVisitas(restauranteId, nuevoValor);
+    }
+  }
+
+  Future<void> _confirmarEliminarRecordatorio(
+    BuildContext context,
+    WidgetRef ref,
+    String recordatorioId,
+  ) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Eliminar recordatorio?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmado == true) {
+      await ref.read(recordatorioRepositoryProvider).delete(recordatorioId);
     }
   }
 
