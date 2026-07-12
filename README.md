@@ -41,9 +41,11 @@ storage, and a stats screen that answers the questions the notes never could.
 - **JSON export/import**: back up the full database to a JSON file, or import
   one back in — a cheap stand-in for "share with a friend" before there's a
   backend.
-- **Dark mode**, following the system's light/dark preference.
-- **One-time Obsidian import**: a companion script parses an existing
-  Obsidian vault of restaurant notes and seeds the database with it.
+- **Dark mode**, following the system's light/dark preference by default, with
+  a manual toggle that overrides it and persists across restarts.
+- **Obsidian vault import**: a companion script converts an existing Obsidian
+  vault of restaurant notes into a JSON file you can load through the app's
+  own import action.
 
 ## Screenshots
 
@@ -103,9 +105,13 @@ flutter test
 
 ## Importing your own data (optional)
 
+The app starts empty and never adds data on its own — use the "Importar
+datos" action (top-right menu on the home screen) to load a JSON backup, your
+own or someone else's.
+
 If you keep restaurant notes in an Obsidian vault with the frontmatter shape
-this project expects, `tool/import_obsidian.dart` converts them into the seed
-JSON the app loads on first launch:
+this project expects, `tool/import_obsidian.dart` converts them into that same
+JSON shape:
 
 ```bash
 dart run tool/import_obsidian.dart "path/to/your/vault"

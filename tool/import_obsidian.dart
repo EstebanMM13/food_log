@@ -1,6 +1,6 @@
-// Imports restaurant notes from the Obsidian vault into
-// assets/seed_restaurantes.json, which the app loads on first run (see
-// lib/data/local/seed_loader.dart) to populate the database.
+// Imports restaurant notes from an Obsidian vault into a JSON file matching
+// the app's backup format (see lib/data/local/backup_service.dart), which
+// you can then load through the app's own "Importar datos" action.
 //
 // How to run:
 //   dart run tool/import_obsidian.dart
