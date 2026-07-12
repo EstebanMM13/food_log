@@ -1,0 +1,394 @@
+{
+  "restaurantes": [
+    {
+      "nombre": "Aqui Teruel",
+      "ubicacion": "Castellón de la Plana",
+      "visitas": 34,
+      "tags": [
+        "Español"
+      ],
+      "notas": "Las patatas bravas son malismas",
+      "platos": [
+        {
+          "tipo": "Entrante",
+          "nombre": "Un poco de todo",
+          "puntuacion": 7.5
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Croquetones",
+          "puntuacion": 8.0
+        },
+        {
+          "tipo": "Tapa",
+          "nombre": "Pan con tomate",
+          "puntuacion": 4.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Calamares",
+          "puntuacion": 8.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Alcachofas estrelladas",
+          "puntuacion": 8.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Boquerones con vinagre",
+          "puntuacion": 8.5
+        },
+        {
+          "tipo": "Postre",
+          "nombre": "Tarta de queso",
+          "puntuacion": 8.0
+        },
+        {
+          "tipo": "Café",
+          "nombre": "Solo",
+          "puntuacion": 9.0
+        }
+      ]
+    },
+    {
+      "nombre": "BOKA-2",
+      "ubicacion": "Castellón de la Plana",
+      "visitas": 14,
+      "tags": [
+        "Español"
+      ],
+      "notas": null,
+      "platos": [
+        {
+          "tipo": "Entrante",
+          "nombre": "Calamares",
+          "puntuacion": 8.75
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Jamón al ajillo",
+          "puntuacion": 7.5
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Patatas Boka 2",
+          "puntuacion": 8.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Queso frito",
+          "puntuacion": 9.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Boquerones con vinagre",
+          "puntuacion": 9.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Ensalada de pollo",
+          "puntuacion": 6.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Bocadillo huevo, bacon y queso",
+          "puntuacion": 7.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Bocadillo 17",
+          "puntuacion": 6.5
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Sandwich mixto",
+          "puntuacion": 9.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Sandwich descapotable",
+          "puntuacion": 8.5
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Hamburguesa brava",
+          "puntuacion": 7.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Tostas anchoas",
+          "puntuacion": 3.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Tostas queso de cabra",
+          "puntuacion": 8.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Tostas solomillo",
+          "puntuacion": 10.0
+        },
+        {
+          "tipo": "Postre",
+          "nombre": "Pastel de limón",
+          "puntuacion": 8.0
+        },
+        {
+          "tipo": "Postre",
+          "nombre": "Natillas",
+          "puntuacion": 7.0
+        },
+        {
+          "tipo": "Postre",
+          "nombre": "Natillas de chocolate",
+          "puntuacion": 8.0
+        },
+        {
+          "tipo": "Café",
+          "nombre": "Solo",
+          "puntuacion": 10.0
+        }
+      ]
+    },
+    {
+      "nombre": "Camelot",
+      "ubicacion": "Castellón de la Plana",
+      "visitas": 7,
+      "tags": [
+        "Español"
+      ],
+      "notas": null,
+      "platos": [
+        {
+          "tipo": "Entrante",
+          "nombre": "Patatas con queso y bacon",
+          "puntuacion": 9.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Bocadillo especial 3",
+          "puntuacion": 7.5
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Bocadillo bacon, huevo y queso",
+          "puntuacion": 8.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Tortilla de patata",
+          "puntuacion": 10.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Pizza 4 quesos",
+          "puntuacion": 9.0
+        },
+        {
+          "tipo": "Café",
+          "nombre": "Capuccino",
+          "puntuacion": 9.5
+        }
+      ]
+    },
+    {
+      "nombre": "Capri",
+      "ubicacion": "Castellón de la Plana",
+      "visitas": 9,
+      "tags": [
+        "Italiano",
+        "Pizzeria"
+      ],
+      "notas": null,
+      "platos": [
+        {
+          "tipo": "Entrante",
+          "nombre": "Carpaccio di carne",
+          "puntuacion": 2.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Gran frito",
+          "puntuacion": 10.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "4 estaciones",
+          "puntuacion": 9.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Procida",
+          "puntuacion": 10.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Spaghetti carbonara",
+          "puntuacion": 9.0
+        }
+      ]
+    },
+    {
+      "nombre": "Casa Fran",
+      "ubicacion": "Castellón de la Plana",
+      "visitas": 1,
+      "tags": [
+        "Español"
+      ],
+      "notas": null,
+      "platos": [
+        {
+          "tipo": "Entrante",
+          "nombre": "Calamares",
+          "puntuacion": 6.0
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Parrillada",
+          "puntuacion": 7.0
+        },
+        {
+          "tipo": "Cafe",
+          "nombre": "Carajillo",
+          "puntuacion": 8.0
+        }
+      ]
+    },
+    {
+      "nombre": "Casa Isabel",
+      "ubicacion": "Alcossebre, Castellón",
+      "visitas": 1,
+      "tags": [
+        "Español"
+      ],
+      "notas": null,
+      "platos": [
+        {
+          "tipo": "Entrante",
+          "nombre": "Ensalada",
+          "puntuacion": 5.5
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Berenjena rellena",
+          "puntuacion": 8.5
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Mejillones al vapor",
+          "puntuacion": 8.5
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Arroz negro",
+          "puntuacion": 8.0
+        }
+      ]
+    },
+    {
+      "nombre": "Mejorana",
+      "ubicacion": "Castellón de la Plana",
+      "visitas": 1,
+      "tags": [
+        "Español"
+      ],
+      "notas": "Tardaron un huevo en traer los platos y encima no estaba ni bueno.",
+      "platos": [
+        {
+          "tipo": "Entrante",
+          "nombre": "Croquetas morellanas",
+          "puntuacion": 8.5
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Tallarinas",
+          "puntuacion": 3.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Huevos rotos con morcilla y chistorra",
+          "puntuacion": 4.0
+        }
+      ]
+    },
+    {
+      "nombre": "Panchos",
+      "ubicacion": "Castellón de la Plana",
+      "visitas": 3,
+      "tags": [
+        "Español"
+      ],
+      "notas": null,
+      "platos": [
+        {
+          "tipo": "Entrante",
+          "nombre": "Gambas al ajillo",
+          "puntuacion": 5.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Patatas con queso gouda y bacon",
+          "puntuacion": 9.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Huevos rotos con jamón",
+          "puntuacion": 4.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Tellinas",
+          "puntuacion": 7.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Ensalada César",
+          "puntuacion": 8.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Chimo de tortilla de queso",
+          "puntuacion": 6.0
+        },
+        {
+          "tipo": "Entrante",
+          "nombre": "Chimo elefante",
+          "puntuacion": 7.5
+        },
+        {
+          "tipo": "Café",
+          "nombre": "Solo",
+          "puntuacion": 7.0
+        }
+      ]
+    },
+    {
+      "nombre": "Pekín",
+      "ubicacion": "Castellón de la Plana",
+      "visitas": 5,
+      "tags": [
+        "Chino"
+      ],
+      "notas": null,
+      "platos": [
+        {
+          "tipo": "Principal",
+          "nombre": "Tallarines fritos con ternera",
+          "puntuacion": 8.5
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Ku-bak con gambas",
+          "puntuacion": 8.5
+        },
+        {
+          "tipo": "Principal",
+          "nombre": "Pollo frito",
+          "puntuacion": 9.0
+        }
+      ]
+    }
+  ]
+}
