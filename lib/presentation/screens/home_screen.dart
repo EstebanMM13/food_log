@@ -1,6 +1,12 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/local/backup_service.dart';
+import '../providers/repository_providers.dart';
 import '../providers/restaurantes_provider.dart';
 import '../widgets/restaurante_card.dart';
 import 'estadisticas_screen.dart';
@@ -31,6 +37,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const EstadisticasScreen()),
             ),
+          ),
+          PopupMenuButton<_DatosAction>(
+            tooltip: 'Más opciones',
+            onSelected: (accion) {
+              switch (accion) {
+                case _DatosAction.exportar:
+                  _exportarDatos();
+                case _DatosAction.importar:
+                  _importarDatos();
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: _DatosAction.exportar,
+                child: Text('Exportar datos'),
+              ),
+              PopupMenuItem(
+                value: _DatosAction.importar,
+                child: Text('Importar datos'),
+              ),
+            ],
           ),
         ],
       ),
@@ -109,4 +136,79 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+
+  Future<void> _exportarDatos() async {
+    try {
+      final json = await exportDatabaseToJson(
+        restaurantes: ref.read(restauranteRepositoryProvider),
+        platos: ref.read(platoRepositoryProvider),
+        recordatorios: ref.read(recordatorioRepositoryProvider),
+        categorias: ref.read(categoriaRepositoryProvider),
+      );
+
+      final fecha = DateTime.now().toIso8601String().split('T').first;
+      final path = await FilePicker.saveFile(
+        dialogTitle: 'Guardar copia de seguridad',
+        fileName: 'foodlog_backup_$fecha.json',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        bytes: Uint8List.fromList(utf8.encode(json)),
+      );
+
+      if (!mounted) return;
+      if (path == null) return; // Cancelado por el usuario.
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Datos exportados correctamente.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al exportar los datos: $e')),
+      );
+    }
+  }
+
+  Future<void> _importarDatos() async {
+    try {
+      final resultado = await FilePicker.pickFiles(
+        dialogTitle: 'Seleccionar copia de seguridad',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        withData: true,
+      );
+      if (resultado == null || resultado.files.isEmpty) return; // Cancelado.
+
+      final bytes = resultado.files.single.bytes;
+      if (bytes == null) {
+        throw Exception('No se pudo leer el archivo seleccionado.');
+      }
+
+      final resumen = await importDatabaseFromJson(
+        utf8.decode(bytes),
+        restaurantes: ref.read(restauranteRepositoryProvider),
+        platos: ref.read(platoRepositoryProvider),
+        recordatorios: ref.read(recordatorioRepositoryProvider),
+        categorias: ref.read(categoriaRepositoryProvider),
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Importados ${resumen.restaurantes} restaurantes, '
+            '${resumen.platos} platos, ${resumen.recordatorios} recordatorios '
+            'y ${resumen.categorias} categorías.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al importar los datos: $e')),
+      );
+    }
+  }
 }
+
+enum _DatosAction { exportar, importar }
