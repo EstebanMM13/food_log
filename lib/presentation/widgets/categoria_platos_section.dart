@@ -189,23 +189,33 @@ class _PlatoRow extends StatelessWidget {
     }
   }
 
+  static const _iconButtonStyle = ButtonStyle(
+    padding: WidgetStatePropertyAll(EdgeInsets.zero),
+    minimumSize: WidgetStatePropertyAll(Size(32, 32)),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    visualDensity: VisualDensity.compact,
+  );
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(plato.nombre),
+      title: Text(plato.nombre, maxLines: 1, overflow: TextOverflow.ellipsis),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.star, size: 16, color: Colors.amber),
           const SizedBox(width: 4),
           Text('${plato.puntuacion.toStringAsFixed(1)}/10'),
+          const SizedBox(width: 4),
           IconButton(
-            icon: const Icon(Icons.chat_bubble_outline),
+            style: _iconButtonStyle,
+            icon: const Icon(Icons.chat_bubble_outline, size: 20),
             tooltip: _tieneComentario ? 'Ver comentario' : 'Sin comentario',
             onPressed: _tieneComentario ? () => _verComentario(context) : null,
           ),
           IconButton(
-            icon: const Icon(Icons.edit),
+            style: _iconButtonStyle,
+            icon: const Icon(Icons.edit, size: 20),
             tooltip: 'Editar',
             color: Theme.of(context).extension<BrandAccentColors>()?.accent,
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
@@ -216,7 +226,8 @@ class _PlatoRow extends StatelessWidget {
             )),
           ),
           IconButton(
-            icon: const Icon(Icons.close),
+            style: _iconButtonStyle,
+            icon: const Icon(Icons.close, size: 20),
             tooltip: 'Eliminar',
             onPressed: () => _confirmarEliminar(context),
           ),
