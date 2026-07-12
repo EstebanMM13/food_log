@@ -36,6 +36,12 @@ storage, and a stats screen that answers the questions the notes never could.
 - **Add/edit dish** with type, name and score.
 - **Global statistics**: overall average, most-visited places, top-rated
   places, most-repeated dishes, restaurants by location, most-used tags.
+- **Custom dish categories** per restaurant, beyond the fixed Entrantes/Platos/
+  Postres sections (e.g. "Bebidas", "Tapas").
+- **JSON export/import**: back up the full database to a JSON file, or import
+  one back in — a cheap stand-in for "share with a friend" before there's a
+  backend.
+- **Dark mode**, following the system's light/dark preference.
 - **One-time Obsidian import**: a companion script parses an existing
   Obsidian vault of restaurant notes and seeds the database with it.
 
@@ -59,8 +65,9 @@ storage, and a stats screen that answers the questions the notes never could.
 restaurantes      id (PK), nombre, ubicacion, visitas, notas, createdAt, updatedAt
 tags              id (PK), nombre (unique)
 restaurante_tags  restauranteId + tagId (composite PK, join table)
-platos            id (PK), restauranteId (FK), tipo, nombre, puntuacion, createdAt
+platos            id (PK), restauranteId (FK), tipo, nombre, puntuacion, comentario, createdAt
 recordatorios     id (PK), restauranteId (FK), texto, hecho
+categorias        id (PK), restauranteId (FK), nombre, orden
 ```
 
 ### Project structure
@@ -81,9 +88,12 @@ Requires the Flutter SDK (Dart `^3.10`).
 
 ```bash
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build --force-jit
 flutter run
 ```
+
+> `--force-jit` is required here: `sqlite3`'s native build hooks aren't
+> compatible with `build_runner`'s default AOT compilation mode.
 
 ## Testing
 
@@ -103,8 +113,6 @@ dart run tool/import_obsidian.dart "path/to/your/vault"
 
 ## Roadmap
 
-- [ ] Manual JSON export/import (a cheap stand-in for "share with a friend"
-      before there's a backend)
 - [ ] Dish photos
 - [ ] Shared backend (Supabase or similar) so multiple people can see/edit the
       same reviews — the domain/data split and UUIDs are already there to
