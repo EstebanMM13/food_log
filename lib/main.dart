@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'data/local/seed_loader.dart';
 import 'presentation/providers/repository_providers.dart';
+import 'presentation/providers/theme_mode_provider.dart';
 import 'presentation/screens/home_screen.dart';
 
 void main() {
@@ -35,7 +36,7 @@ class _MiAppState extends ConsumerState<MiApp> {
       title: 'FoodLog',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: ref.watch(themeModeProvider).value ?? ThemeMode.system,
       home: const HomeScreen(),
     );
   }

@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/local/backup_service.dart';
 import '../providers/repository_providers.dart';
 import '../providers/restaurantes_provider.dart';
+import '../providers/theme_mode_provider.dart';
 import '../widgets/restaurante_card.dart';
 import 'estadisticas_screen.dart';
 import 'restaurante_detail_screen.dart';
@@ -26,11 +27,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final resumenAsync = ref.watch(restaurantesResumenProvider);
+    final themeMode = ref.watch(themeModeProvider).value ?? ThemeMode.system;
+    // When themeMode is ThemeMode.system, the actually-visible brightness
+    // comes from the platform, not from themeMode itself.
+    final brilloEfectivo = switch (themeMode) {
+      ThemeMode.light => Brightness.light,
+      ThemeMode.dark => Brightness.dark,
+      ThemeMode.system => MediaQuery.platformBrightnessOf(context),
+    };
+    final esOscuroActualmente = brilloEfectivo == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Food Log'),
         actions: [
+          IconButton(
+            icon: Icon(esOscuroActualmente ? Icons.light_mode : Icons.dark_mode),
+            tooltip: esOscuroActualmente ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro',
+            onPressed: () => ref.read(themeModeProvider.notifier).toggle(brilloEfectivo),
+          ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
             tooltip: 'Estadísticas',
