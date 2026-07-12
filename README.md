@@ -124,3 +124,8 @@ dart run tool/import_obsidian.dart "path/to/your/vault"
       same reviews — the domain/data split and UUIDs are already there to
       make this a non-rewrite
 - [ ] Map view / location autocomplete
+
+## License
+
+All rights reserved — see [LICENSE](LICENSE). This repository is shared
+publicly for portfolio purposes; it isn't open source.
