@@ -34,6 +34,8 @@ class _MiAppState extends ConsumerState<MiApp> {
     return MaterialApp(
       title: 'FoodLog',
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
       home: const HomeScreen(),
     );
   }

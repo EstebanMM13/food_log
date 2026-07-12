@@ -207,7 +207,7 @@ class _PlatoRow extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit),
             tooltip: 'Editar',
-            color: AppTheme.brandOrange,
+            color: Theme.of(context).extension<BrandAccentColors>()?.accent,
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => PlatoFormScreen(
                 restauranteId: section.widget.restauranteId,

@@ -92,7 +92,10 @@ class RestauranteDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           restaurante.nombre,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.brandNavy),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).extension<BrandAccentColors>()?.strongText,
+          ),
         ),
         actions: [
           IconButton(
@@ -118,7 +121,11 @@ class RestauranteDetailScreen extends ConsumerWidget {
           if (restaurante.ubicacion != null && restaurante.ubicacion!.isNotEmpty)
             Row(
               children: [
-                const Icon(Icons.location_on, size: 18, color: AppTheme.brandOrange),
+                Icon(
+                  Icons.location_on,
+                  size: 18,
+                  color: Theme.of(context).extension<BrandAccentColors>()?.accent,
+                ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text.rich(
@@ -179,7 +186,11 @@ class RestauranteDetailScreen extends ConsumerWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.repeat, size: 18, color: AppTheme.brandNavy),
+              Icon(
+                Icons.repeat,
+                size: 18,
+                color: Theme.of(context).extension<BrandAccentColors>()?.strongText,
+              ),
               const SizedBox(width: 4),
               Text.rich(
                 TextSpan(
