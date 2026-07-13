@@ -76,11 +76,25 @@ flutter_launcher_icons:
     generate: true
 
 # Config for the flutter_native_splash generator (dart run flutter_native_splash:create).
-# Uses assets/branding/splash_logo.png (icon + wordmark) on the existing cream background.
-# No dark variant is configured since app_theme.dart does not define a dark theme yet.
+# Shows the icon centered with the "FoodLog" wordmark pinned below it as a
+# branding image. On Android 12+ this relies on the native
+# windowSplashScreenBrandingImage API (android_12 section below) instead of a
+# second Flutter-side screen — without it, Android 12+ ignores this config
+# entirely and falls back to a plain icon on a black background.
 flutter_native_splash:
-  image: "assets/branding/splash_logo.png"
+  image: "assets/branding/icon.png"
   color: "#F5EDE2"
+  color_dark: "#2A3647"
+  branding: "assets/branding/wordmark.png"
+  branding_mode: bottom
+
+  android_12:
+    image: "assets/branding/icon.png"
+    icon_background_color: "#F5EDE2"
+    color: "#F5EDE2"
+    icon_background_color_dark: "#2A3647"
+    color_dark: "#2A3647"
+    branding: "assets/branding/wordmark.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -93,8 +107,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  assets:
-    - assets/branding/icon.png
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
