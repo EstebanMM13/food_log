@@ -17,6 +17,13 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
   }
 
   @override
+  Future<List<Restaurante>> getAll() {
+    return (_db.select(_db.restaurantes)
+          ..orderBy([(t) => OrderingTerm(expression: t.nombre)]))
+        .get();
+  }
+
+  @override
   Future<Restaurante?> getById(String id) {
     return (_db.select(_db.restaurantes)
           ..where((t) => t.id.equals(id)))

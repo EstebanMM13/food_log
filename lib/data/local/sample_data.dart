@@ -5,11 +5,21 @@ import '../../domain/repositories/restaurante_repository.dart';
 /// offered as an opt-in checkbox on the intro dialog so first-time users
 /// have something to look at before they start logging their own visits.
 /// Never loaded automatically.
+///
+/// Skips any sample restaurant whose name already exists, so checking the
+/// box again (or reopening the dialog from the menu) doesn't create
+/// duplicates — and if the user deleted a couple of them, only those
+/// missing ones get reinserted.
 Future<void> cargarRestaurantesDeMuestra({
   required RestauranteRepository restaurantes,
   required PlatoRepository platos,
 }) async {
+  final existentes = await restaurantes.getAll();
+  final nombresExistentes = existentes.map((r) => r.nombre.trim().toLowerCase()).toSet();
+
   for (final r in _restaurantesDeMuestra) {
+    if (nombresExistentes.contains(r.nombre.trim().toLowerCase())) continue;
+
     final id = await restaurantes.insert(
       nombre: r.nombre,
       ubicacion: r.ubicacion,

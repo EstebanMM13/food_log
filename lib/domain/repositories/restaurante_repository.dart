@@ -10,6 +10,11 @@ abstract class RestauranteRepository {
   /// All restaurants, ordered by name.
   Stream<List<Restaurante>> watchAll();
 
+  /// One-shot snapshot of every restaurant, for callers that just need a
+  /// point-in-time read (e.g. a duplicate-name check) instead of a live
+  /// subscription.
+  Future<List<Restaurante>> getAll();
+
   Future<Restaurante?> getById(String id);
 
   /// Tags currently assigned to [restauranteId].
