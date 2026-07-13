@@ -12,6 +12,13 @@
   <a href="https://github.com/EstebanMM13/food_log/actions/workflows/ci.yml">
     <img src="https://github.com/EstebanMM13/food_log/actions/workflows/ci.yml/badge.svg" alt="CI status" />
   </a>
+  <a href="https://github.com/EstebanMM13/food_log/releases/latest">
+    <img src="https://img.shields.io/github/v/release/EstebanMM13/food_log" alt="Latest release" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/EstebanMM13/food_log/releases/latest">Download the Android APK</a>
 </p>
 
 ---
