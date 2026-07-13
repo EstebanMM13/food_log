@@ -223,12 +223,23 @@ class RestauranteDetailScreen extends ConsumerWidget {
             icon: const Icon(Icons.check_circle_outline),
             label: const Text('Registrar visita'),
           ),
-          if (restaurante.notas != null && restaurante.notas!.isNotEmpty) ...[
-            const Divider(height: 32),
-            Text('Notas', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(restaurante.notas!),
-          ],
+          const Divider(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Notas', style: Theme.of(context).textTheme.titleMedium),
+              TextButton.icon(
+                onPressed: () => _editarNotas(context, ref, restaurante!, tags),
+                icon: const Icon(Icons.edit),
+                label: const Text('Editar'),
+              ),
+            ],
+          ),
+          Text(
+            restaurante.notas != null && restaurante.notas!.isNotEmpty
+                ? restaurante.notas!
+                : 'Sin notas.',
+          ),
           const Divider(height: 32),
           Text('Platos', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
@@ -368,6 +379,46 @@ class RestauranteDetailScreen extends ConsumerWidget {
     );
     if (nuevoValor != null && nuevoValor >= 0) {
       await ref.read(restauranteRepositoryProvider).setVisitas(restauranteId, nuevoValor);
+    }
+  }
+
+  Future<void> _editarNotas(
+    BuildContext context,
+    WidgetRef ref,
+    Restaurante restaurante,
+    List<Tag> tags,
+  ) async {
+    final controller = TextEditingController(text: restaurante.notas ?? '');
+    final nuevoTexto = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Editar notas'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 4,
+          decoration: const InputDecoration(hintText: 'Notas sobre este restaurante'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+    if (nuevoTexto != null) {
+      await ref.read(restauranteRepositoryProvider).update(
+            id: restaurante.id,
+            nombre: restaurante.nombre,
+            ubicacion: restaurante.ubicacion,
+            notas: nuevoTexto.isEmpty ? null : nuevoTexto,
+            tags: tags.map((t) => t.nombre).toList(),
+          );
     }
   }
 
