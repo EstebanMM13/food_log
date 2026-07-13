@@ -144,7 +144,11 @@ class RestauranteDetailScreen extends ConsumerWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.star, size: 18, color: Colors.amber),
+              Icon(
+                Icons.star,
+                size: 18,
+                color: Theme.of(context).extension<BrandAccentColors>()?.rating,
+              ),
               const SizedBox(width: 4),
               Text.rich(
                 TextSpan(

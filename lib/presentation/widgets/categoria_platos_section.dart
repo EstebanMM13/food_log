@@ -101,7 +101,11 @@ class _CategoriaPlatosSectionState extends State<CategoriaPlatosSection> {
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
-                  const Icon(Icons.star, size: 18, color: Colors.amber),
+                  Icon(
+                    Icons.star,
+                    size: 18,
+                    color: Theme.of(context).extension<BrandAccentColors>()?.rating,
+                  ),
                   const SizedBox(width: 4),
                   Text(media == null ? '—' : '${media.toStringAsFixed(1)}/10'),
                   if (widget.onEliminarCategoria != null)
@@ -215,7 +219,11 @@ class _PlatoRow extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.star, size: 16, color: Colors.amber),
+          Icon(
+            Icons.star,
+            size: 16,
+            color: Theme.of(context).extension<BrandAccentColors>()?.rating,
+          ),
           const SizedBox(width: 4),
           Text('${plato.puntuacion.toStringAsFixed(1)}/10'),
           IconButton(

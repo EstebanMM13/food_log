@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_theme.dart';
 import '../../domain/models/restaurante_resumen.dart';
 
 /// One row in the home list: name — location — score as the main line
@@ -48,7 +49,11 @@ class RestauranteCard extends StatelessWidget {
               ),
             ],
             const SizedBox(width: 8),
-            const Icon(Icons.star, size: 16, color: Colors.amber),
+            Icon(
+              Icons.star,
+              size: 16,
+              color: Theme.of(context).extension<BrandAccentColors>()?.rating,
+            ),
             const SizedBox(width: 2),
             Text(media == null ? '—' : '${media.toStringAsFixed(1)}/10'),
           ],
