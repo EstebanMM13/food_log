@@ -26,7 +26,7 @@ class RestauranteCard extends StatelessWidget {
         title: Row(
           children: [
             Expanded(
-              flex: 3,
+              flex: 2,
               child: Text(
                 restaurante.nombre,
                 style: const TextStyle(fontWeight: FontWeight.bold),

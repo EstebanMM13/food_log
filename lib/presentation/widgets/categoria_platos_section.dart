@@ -189,10 +189,29 @@ class _PlatoRow extends StatelessWidget {
     }
   }
 
+  void _verNombreCompleto(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nombre completo'),
+        content: Text(plato.nombre),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(plato.nombre, maxLines: 1, overflow: TextOverflow.ellipsis),
+      title: GestureDetector(
+        onTap: () => _verNombreCompleto(context),
+        child: Text(plato.nombre, maxLines: 1, overflow: TextOverflow.ellipsis),
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -204,21 +223,28 @@ class _PlatoRow extends StatelessWidget {
             tooltip: _tieneComentario ? 'Ver comentario' : 'Sin comentario',
             onPressed: _tieneComentario ? () => _verComentario(context) : null,
           ),
-          IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: 'Editar',
-            color: Theme.of(context).extension<BrandAccentColors>()?.accent,
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => PlatoFormScreen(
-                restauranteId: section.widget.restauranteId,
-                plato: plato,
-              ),
-            )),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: 'Eliminar',
-            onPressed: () => _confirmarEliminar(context),
+          PopupMenuButton<String>(
+            icon: Icon(
+              Icons.edit,
+              color: Theme.of(context).extension<BrandAccentColors>()?.accent,
+            ),
+            tooltip: 'Opciones',
+            onSelected: (value) {
+              if (value == 'editar') {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => PlatoFormScreen(
+                    restauranteId: section.widget.restauranteId,
+                    plato: plato,
+                  ),
+                ));
+              } else if (value == 'eliminar') {
+                _confirmarEliminar(context);
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'editar', child: Text('Editar')),
+              PopupMenuItem(value: 'eliminar', child: Text('Eliminar')),
+            ],
           ),
         ],
       ),

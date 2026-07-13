@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/local/app_database.dart';
 import '../providers/repository_providers.dart';
+import '../providers/restaurantes_provider.dart';
 
 /// Add/edit form for a restaurant: name, location, tags (as editable
 /// chips) and free-text notes. Pass [restaurante] and [tagsIniciales] to
@@ -89,6 +90,8 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final restaurantesExistentes = ref.watch(restaurantesProvider).value ?? const [];
+
     return Scaffold(
       appBar: AppBar(title: Text(_esEdicion ? 'Editar restaurante' : 'Nuevo restaurante')),
       body: Form(
@@ -99,8 +102,15 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
             TextFormField(
               controller: _nombreController,
               decoration: const InputDecoration(labelText: 'Nombre'),
-              validator: (value) =>
-                  (value == null || value.trim().isEmpty) ? 'El nombre es obligatorio' : null,
+              validator: (value) {
+                final nombre = value?.trim() ?? '';
+                if (nombre.isEmpty) return 'El nombre es obligatorio';
+                final duplicado = restaurantesExistentes.any((r) =>
+                    r.id != widget.restaurante?.id &&
+                    r.nombre.trim().toLowerCase() == nombre.toLowerCase());
+                if (duplicado) return 'Ya existe un restaurante con ese nombre';
+                return null;
+              },
             ),
             const SizedBox(height: 12),
             TextFormField(
