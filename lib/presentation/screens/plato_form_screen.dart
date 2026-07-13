@@ -46,6 +46,17 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
 
   bool get _esEdicion => widget.plato != null;
 
+  /// Whether to show the free-text "specify type" field. Only relevant for
+  /// dishes actually tied to a custom (user-defined) category: either being
+  /// added from that category's own "Añadir" button ([tipoLibreInicial] set)
+  /// or already carrying a custom category name when editing. A dish added
+  /// straight into "Otros" doesn't need this — it just saves as "Otro".
+  bool get _mostrarCampoLibre =>
+      _tipoSeleccionado == TipoPlato.otro &&
+      (widget.tipoLibreInicial != null ||
+          (_esEdicion &&
+              widget.plato!.tipo.trim().toLowerCase() != TipoPlato.otro.label.toLowerCase()));
+
   @override
   void initState() {
     super.initState();
@@ -78,9 +89,7 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _guardando = true);
 
-    final tipo = _tipoSeleccionado == TipoPlato.otro
-        ? _tipoLibreController.text.trim()
-        : _tipoSeleccionado.label;
+    final tipo = _mostrarCampoLibre ? _tipoLibreController.text.trim() : _tipoSeleccionado.label;
     final nombre = _nombreController.text.trim();
     final comentario =
         _comentarioController.text.trim().isEmpty ? null : _comentarioController.text.trim();
@@ -123,13 +132,12 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
                   .toList(),
               onChanged: (value) => setState(() => _tipoSeleccionado = value!),
             ),
-            if (_tipoSeleccionado == TipoPlato.otro) ...[
+            if (_mostrarCampoLibre) ...[
               const SizedBox(height: 12),
               TextFormField(
                 controller: _tipoLibreController,
                 decoration: const InputDecoration(labelText: 'Especifica el tipo'),
-                validator: (value) => (_tipoSeleccionado == TipoPlato.otro &&
-                        (value == null || value.trim().isEmpty))
+                validator: (value) => (_mostrarCampoLibre && (value == null || value.trim().isEmpty))
                     ? 'Indica el tipo de plato'
                     : null,
               ),
