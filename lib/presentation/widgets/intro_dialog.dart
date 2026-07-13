@@ -26,15 +26,15 @@ Future<void> mostrarDialogoIntro(BuildContext context, WidgetRef ref) async {
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) => AlertDialog(
-        title: const Text('Bienvenido a FoodLog'),
+        title: const Text('¡Bienvenido a FoodLog!'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'FoodLog es una aplicación para anotar y puntuar bares y '
-              'restaurantes, apuntando los diferentes platos, y ver '
-              'estadísticas sobre ellos.',
+              'FoodLog es tu cuaderno de restaurantes: anota los bares y '
+              'restaurantes que visitas, puntúa cada plato que pruebes y '
+              'consulta estadísticas sobre tus valoraciones.',
             ),
             const SizedBox(height: 12),
             CheckboxListTile(
@@ -43,13 +43,14 @@ Future<void> mostrarDialogoIntro(BuildContext context, WidgetRef ref) async {
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
               title: const Text('Cargar restaurantes de prueba'),
+              subtitle: const Text('Para que veas cómo funciona antes de añadir los tuyos'),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cerrar'),
+            child: const Text('Entendido'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),

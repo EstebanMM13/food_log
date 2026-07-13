@@ -23,7 +23,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Bienvenido a FoodLog'), findsOneWidget);
+    expect(find.text('¡Bienvenido a FoodLog!'), findsOneWidget);
 
     await tester.tap(find.text('Cargar restaurantes de prueba'));
     await tester.tap(find.text('No volver a mostrar'));
@@ -50,14 +50,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Bienvenido a FoodLog'), findsNothing);
+    expect(find.text('¡Bienvenido a FoodLog!'), findsNothing);
 
     await tester.tap(find.byTooltip('Más opciones'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Acerca de FoodLog'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Bienvenido a FoodLog'), findsOneWidget);
+    expect(find.text('¡Bienvenido a FoodLog!'), findsOneWidget);
 
     await db.close();
   });

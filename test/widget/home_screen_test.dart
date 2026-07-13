@@ -68,7 +68,7 @@ void main() {
 
     // First launch shows the intro dialog on top of everything else; dismiss
     // it before interacting with the AppBar underneath.
-    await tester.tap(find.text('Cerrar'));
+    await tester.tap(find.text('Entendido'));
     await tester.pumpAndSettle();
 
     // Follows the system, which is currently light -> shows the "moon" icon
