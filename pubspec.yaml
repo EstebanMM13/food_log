@@ -43,10 +43,14 @@ dependencies:
   drift: 2.31.0
   file_picker: ^11.0.2
   shared_preferences: ^2.5.5
+  image_picker: ^1.2.3
+  archive: ^4.0.9
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  path_provider_platform_interface: ^2.1.2
+  sqlite3: ^2.9.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

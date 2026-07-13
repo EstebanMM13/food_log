@@ -59,6 +59,17 @@ class $RestaurantesTable extends Restaurantes
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _fotoPathMeta = const VerificationMeta(
+    'fotoPath',
+  );
+  @override
+  late final GeneratedColumn<String> fotoPath = GeneratedColumn<String>(
+    'foto_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -88,6 +99,7 @@ class $RestaurantesTable extends Restaurantes
     ubicacion,
     visitas,
     notas,
+    fotoPath,
     createdAt,
     updatedAt,
   ];
@@ -132,6 +144,12 @@ class $RestaurantesTable extends Restaurantes
       context.handle(
         _notasMeta,
         notas.isAcceptableOrUnknown(data['notas']!, _notasMeta),
+      );
+    }
+    if (data.containsKey('foto_path')) {
+      context.handle(
+        _fotoPathMeta,
+        fotoPath.isAcceptableOrUnknown(data['foto_path']!, _fotoPathMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -179,6 +197,10 @@ class $RestaurantesTable extends Restaurantes
         DriftSqlType.string,
         data['${effectivePrefix}notas'],
       ),
+      fotoPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}foto_path'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -202,6 +224,11 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
   final String? ubicacion;
   final int visitas;
   final String? notas;
+
+  /// Absolute path to a photo of this restaurant, copied into the app's own
+  /// documents directory (see lib/core/photo_storage.dart). Null if no
+  /// photo was ever set.
+  final String? fotoPath;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Restaurante({
@@ -210,6 +237,7 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
     this.ubicacion,
     required this.visitas,
     this.notas,
+    this.fotoPath,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -224,6 +252,9 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
     map['visitas'] = Variable<int>(visitas);
     if (!nullToAbsent || notas != null) {
       map['notas'] = Variable<String>(notas);
+    }
+    if (!nullToAbsent || fotoPath != null) {
+      map['foto_path'] = Variable<String>(fotoPath);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -241,6 +272,9 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
       notas: notas == null && nullToAbsent
           ? const Value.absent()
           : Value(notas),
+      fotoPath: fotoPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fotoPath),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -257,6 +291,7 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
       ubicacion: serializer.fromJson<String?>(json['ubicacion']),
       visitas: serializer.fromJson<int>(json['visitas']),
       notas: serializer.fromJson<String?>(json['notas']),
+      fotoPath: serializer.fromJson<String?>(json['fotoPath']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -270,6 +305,7 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
       'ubicacion': serializer.toJson<String?>(ubicacion),
       'visitas': serializer.toJson<int>(visitas),
       'notas': serializer.toJson<String?>(notas),
+      'fotoPath': serializer.toJson<String?>(fotoPath),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -281,6 +317,7 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
     Value<String?> ubicacion = const Value.absent(),
     int? visitas,
     Value<String?> notas = const Value.absent(),
+    Value<String?> fotoPath = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Restaurante(
@@ -289,6 +326,7 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
     ubicacion: ubicacion.present ? ubicacion.value : this.ubicacion,
     visitas: visitas ?? this.visitas,
     notas: notas.present ? notas.value : this.notas,
+    fotoPath: fotoPath.present ? fotoPath.value : this.fotoPath,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -299,6 +337,7 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
       ubicacion: data.ubicacion.present ? data.ubicacion.value : this.ubicacion,
       visitas: data.visitas.present ? data.visitas.value : this.visitas,
       notas: data.notas.present ? data.notas.value : this.notas,
+      fotoPath: data.fotoPath.present ? data.fotoPath.value : this.fotoPath,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -312,6 +351,7 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
           ..write('ubicacion: $ubicacion, ')
           ..write('visitas: $visitas, ')
           ..write('notas: $notas, ')
+          ..write('fotoPath: $fotoPath, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -319,8 +359,16 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, nombre, ubicacion, visitas, notas, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    nombre,
+    ubicacion,
+    visitas,
+    notas,
+    fotoPath,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -330,6 +378,7 @@ class Restaurante extends DataClass implements Insertable<Restaurante> {
           other.ubicacion == this.ubicacion &&
           other.visitas == this.visitas &&
           other.notas == this.notas &&
+          other.fotoPath == this.fotoPath &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -340,6 +389,7 @@ class RestaurantesCompanion extends UpdateCompanion<Restaurante> {
   final Value<String?> ubicacion;
   final Value<int> visitas;
   final Value<String?> notas;
+  final Value<String?> fotoPath;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -349,6 +399,7 @@ class RestaurantesCompanion extends UpdateCompanion<Restaurante> {
     this.ubicacion = const Value.absent(),
     this.visitas = const Value.absent(),
     this.notas = const Value.absent(),
+    this.fotoPath = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -359,6 +410,7 @@ class RestaurantesCompanion extends UpdateCompanion<Restaurante> {
     this.ubicacion = const Value.absent(),
     this.visitas = const Value.absent(),
     this.notas = const Value.absent(),
+    this.fotoPath = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -372,6 +424,7 @@ class RestaurantesCompanion extends UpdateCompanion<Restaurante> {
     Expression<String>? ubicacion,
     Expression<int>? visitas,
     Expression<String>? notas,
+    Expression<String>? fotoPath,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -382,6 +435,7 @@ class RestaurantesCompanion extends UpdateCompanion<Restaurante> {
       if (ubicacion != null) 'ubicacion': ubicacion,
       if (visitas != null) 'visitas': visitas,
       if (notas != null) 'notas': notas,
+      if (fotoPath != null) 'foto_path': fotoPath,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -394,6 +448,7 @@ class RestaurantesCompanion extends UpdateCompanion<Restaurante> {
     Value<String?>? ubicacion,
     Value<int>? visitas,
     Value<String?>? notas,
+    Value<String?>? fotoPath,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -404,6 +459,7 @@ class RestaurantesCompanion extends UpdateCompanion<Restaurante> {
       ubicacion: ubicacion ?? this.ubicacion,
       visitas: visitas ?? this.visitas,
       notas: notas ?? this.notas,
+      fotoPath: fotoPath ?? this.fotoPath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -428,6 +484,9 @@ class RestaurantesCompanion extends UpdateCompanion<Restaurante> {
     if (notas.present) {
       map['notas'] = Variable<String>(notas.value);
     }
+    if (fotoPath.present) {
+      map['foto_path'] = Variable<String>(fotoPath.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -448,6 +507,7 @@ class RestaurantesCompanion extends UpdateCompanion<Restaurante> {
           ..write('ubicacion: $ubicacion, ')
           ..write('visitas: $visitas, ')
           ..write('notas: $notas, ')
+          ..write('fotoPath: $fotoPath, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -954,6 +1014,17 @@ class $PlatosTable extends Platos with TableInfo<$PlatosTable, Plato> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _fotoPathMeta = const VerificationMeta(
+    'fotoPath',
+  );
+  @override
+  late final GeneratedColumn<String> fotoPath = GeneratedColumn<String>(
+    'foto_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -973,6 +1044,7 @@ class $PlatosTable extends Platos with TableInfo<$PlatosTable, Plato> {
     nombre,
     puntuacion,
     comentario,
+    fotoPath,
     createdAt,
   ];
   @override
@@ -1033,6 +1105,12 @@ class $PlatosTable extends Platos with TableInfo<$PlatosTable, Plato> {
         comentario.isAcceptableOrUnknown(data['comentario']!, _comentarioMeta),
       );
     }
+    if (data.containsKey('foto_path')) {
+      context.handle(
+        _fotoPathMeta,
+        fotoPath.isAcceptableOrUnknown(data['foto_path']!, _fotoPathMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1074,6 +1152,10 @@ class $PlatosTable extends Platos with TableInfo<$PlatosTable, Plato> {
         DriftSqlType.string,
         data['${effectivePrefix}comentario'],
       ),
+      fotoPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}foto_path'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1094,6 +1176,11 @@ class Plato extends DataClass implements Insertable<Plato> {
   final String nombre;
   final double puntuacion;
   final String? comentario;
+
+  /// Absolute path to a photo of this dish, copied into the app's own
+  /// documents directory (see lib/core/photo_storage.dart). Null if no
+  /// photo was ever set.
+  final String? fotoPath;
   final DateTime createdAt;
   const Plato({
     required this.id,
@@ -1102,6 +1189,7 @@ class Plato extends DataClass implements Insertable<Plato> {
     required this.nombre,
     required this.puntuacion,
     this.comentario,
+    this.fotoPath,
     required this.createdAt,
   });
   @override
@@ -1114,6 +1202,9 @@ class Plato extends DataClass implements Insertable<Plato> {
     map['puntuacion'] = Variable<double>(puntuacion);
     if (!nullToAbsent || comentario != null) {
       map['comentario'] = Variable<String>(comentario);
+    }
+    if (!nullToAbsent || fotoPath != null) {
+      map['foto_path'] = Variable<String>(fotoPath);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
@@ -1129,6 +1220,9 @@ class Plato extends DataClass implements Insertable<Plato> {
       comentario: comentario == null && nullToAbsent
           ? const Value.absent()
           : Value(comentario),
+      fotoPath: fotoPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fotoPath),
       createdAt: Value(createdAt),
     );
   }
@@ -1145,6 +1239,7 @@ class Plato extends DataClass implements Insertable<Plato> {
       nombre: serializer.fromJson<String>(json['nombre']),
       puntuacion: serializer.fromJson<double>(json['puntuacion']),
       comentario: serializer.fromJson<String?>(json['comentario']),
+      fotoPath: serializer.fromJson<String?>(json['fotoPath']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -1158,6 +1253,7 @@ class Plato extends DataClass implements Insertable<Plato> {
       'nombre': serializer.toJson<String>(nombre),
       'puntuacion': serializer.toJson<double>(puntuacion),
       'comentario': serializer.toJson<String?>(comentario),
+      'fotoPath': serializer.toJson<String?>(fotoPath),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -1169,6 +1265,7 @@ class Plato extends DataClass implements Insertable<Plato> {
     String? nombre,
     double? puntuacion,
     Value<String?> comentario = const Value.absent(),
+    Value<String?> fotoPath = const Value.absent(),
     DateTime? createdAt,
   }) => Plato(
     id: id ?? this.id,
@@ -1177,6 +1274,7 @@ class Plato extends DataClass implements Insertable<Plato> {
     nombre: nombre ?? this.nombre,
     puntuacion: puntuacion ?? this.puntuacion,
     comentario: comentario.present ? comentario.value : this.comentario,
+    fotoPath: fotoPath.present ? fotoPath.value : this.fotoPath,
     createdAt: createdAt ?? this.createdAt,
   );
   Plato copyWithCompanion(PlatosCompanion data) {
@@ -1193,6 +1291,7 @@ class Plato extends DataClass implements Insertable<Plato> {
       comentario: data.comentario.present
           ? data.comentario.value
           : this.comentario,
+      fotoPath: data.fotoPath.present ? data.fotoPath.value : this.fotoPath,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1206,6 +1305,7 @@ class Plato extends DataClass implements Insertable<Plato> {
           ..write('nombre: $nombre, ')
           ..write('puntuacion: $puntuacion, ')
           ..write('comentario: $comentario, ')
+          ..write('fotoPath: $fotoPath, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1219,6 +1319,7 @@ class Plato extends DataClass implements Insertable<Plato> {
     nombre,
     puntuacion,
     comentario,
+    fotoPath,
     createdAt,
   );
   @override
@@ -1231,6 +1332,7 @@ class Plato extends DataClass implements Insertable<Plato> {
           other.nombre == this.nombre &&
           other.puntuacion == this.puntuacion &&
           other.comentario == this.comentario &&
+          other.fotoPath == this.fotoPath &&
           other.createdAt == this.createdAt);
 }
 
@@ -1241,6 +1343,7 @@ class PlatosCompanion extends UpdateCompanion<Plato> {
   final Value<String> nombre;
   final Value<double> puntuacion;
   final Value<String?> comentario;
+  final Value<String?> fotoPath;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const PlatosCompanion({
@@ -1250,6 +1353,7 @@ class PlatosCompanion extends UpdateCompanion<Plato> {
     this.nombre = const Value.absent(),
     this.puntuacion = const Value.absent(),
     this.comentario = const Value.absent(),
+    this.fotoPath = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1260,6 +1364,7 @@ class PlatosCompanion extends UpdateCompanion<Plato> {
     required String nombre,
     required double puntuacion,
     this.comentario = const Value.absent(),
+    this.fotoPath = const Value.absent(),
     required DateTime createdAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -1275,6 +1380,7 @@ class PlatosCompanion extends UpdateCompanion<Plato> {
     Expression<String>? nombre,
     Expression<double>? puntuacion,
     Expression<String>? comentario,
+    Expression<String>? fotoPath,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -1285,6 +1391,7 @@ class PlatosCompanion extends UpdateCompanion<Plato> {
       if (nombre != null) 'nombre': nombre,
       if (puntuacion != null) 'puntuacion': puntuacion,
       if (comentario != null) 'comentario': comentario,
+      if (fotoPath != null) 'foto_path': fotoPath,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1297,6 +1404,7 @@ class PlatosCompanion extends UpdateCompanion<Plato> {
     Value<String>? nombre,
     Value<double>? puntuacion,
     Value<String?>? comentario,
+    Value<String?>? fotoPath,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
   }) {
@@ -1307,6 +1415,7 @@ class PlatosCompanion extends UpdateCompanion<Plato> {
       nombre: nombre ?? this.nombre,
       puntuacion: puntuacion ?? this.puntuacion,
       comentario: comentario ?? this.comentario,
+      fotoPath: fotoPath ?? this.fotoPath,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1333,6 +1442,9 @@ class PlatosCompanion extends UpdateCompanion<Plato> {
     if (comentario.present) {
       map['comentario'] = Variable<String>(comentario.value);
     }
+    if (fotoPath.present) {
+      map['foto_path'] = Variable<String>(fotoPath.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1351,6 +1463,7 @@ class PlatosCompanion extends UpdateCompanion<Plato> {
           ..write('nombre: $nombre, ')
           ..write('puntuacion: $puntuacion, ')
           ..write('comentario: $comentario, ')
+          ..write('fotoPath: $fotoPath, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -2017,6 +2130,7 @@ typedef $$RestaurantesTableCreateCompanionBuilder =
       Value<String?> ubicacion,
       Value<int> visitas,
       Value<String?> notas,
+      Value<String?> fotoPath,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -2028,6 +2142,7 @@ typedef $$RestaurantesTableUpdateCompanionBuilder =
       Value<String?> ubicacion,
       Value<int> visitas,
       Value<String?> notas,
+      Value<String?> fotoPath,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -2156,6 +2271,11 @@ class $$RestaurantesTableFilterComposer
 
   ColumnFilters<String> get notas => $composableBuilder(
     column: $table.notas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fotoPath => $composableBuilder(
+    column: $table.fotoPath,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2304,6 +2424,11 @@ class $$RestaurantesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get fotoPath => $composableBuilder(
+    column: $table.fotoPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -2338,6 +2463,9 @@ class $$RestaurantesTableAnnotationComposer
 
   GeneratedColumn<String> get notas =>
       $composableBuilder(column: $table.notas, builder: (column) => column);
+
+  GeneratedColumn<String> get fotoPath =>
+      $composableBuilder(column: $table.fotoPath, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -2484,6 +2612,7 @@ class $$RestaurantesTableTableManager
                 Value<String?> ubicacion = const Value.absent(),
                 Value<int> visitas = const Value.absent(),
                 Value<String?> notas = const Value.absent(),
+                Value<String?> fotoPath = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -2493,6 +2622,7 @@ class $$RestaurantesTableTableManager
                 ubicacion: ubicacion,
                 visitas: visitas,
                 notas: notas,
+                fotoPath: fotoPath,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -2504,6 +2634,7 @@ class $$RestaurantesTableTableManager
                 Value<String?> ubicacion = const Value.absent(),
                 Value<int> visitas = const Value.absent(),
                 Value<String?> notas = const Value.absent(),
+                Value<String?> fotoPath = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -2513,6 +2644,7 @@ class $$RestaurantesTableTableManager
                 ubicacion: ubicacion,
                 visitas: visitas,
                 notas: notas,
+                fotoPath: fotoPath,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -3256,6 +3388,7 @@ typedef $$PlatosTableCreateCompanionBuilder =
       required String nombre,
       required double puntuacion,
       Value<String?> comentario,
+      Value<String?> fotoPath,
       required DateTime createdAt,
       Value<int> rowid,
     });
@@ -3267,6 +3400,7 @@ typedef $$PlatosTableUpdateCompanionBuilder =
       Value<String> nombre,
       Value<double> puntuacion,
       Value<String?> comentario,
+      Value<String?> fotoPath,
       Value<DateTime> createdAt,
       Value<int> rowid,
     });
@@ -3326,6 +3460,11 @@ class $$PlatosTableFilterComposer
 
   ColumnFilters<String> get comentario => $composableBuilder(
     column: $table.comentario,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fotoPath => $composableBuilder(
+    column: $table.fotoPath,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3392,6 +3531,11 @@ class $$PlatosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get fotoPath => $composableBuilder(
+    column: $table.fotoPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3448,6 +3592,9 @@ class $$PlatosTableAnnotationComposer
     column: $table.comentario,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get fotoPath =>
+      $composableBuilder(column: $table.fotoPath, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3510,6 +3657,7 @@ class $$PlatosTableTableManager
                 Value<String> nombre = const Value.absent(),
                 Value<double> puntuacion = const Value.absent(),
                 Value<String?> comentario = const Value.absent(),
+                Value<String?> fotoPath = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PlatosCompanion(
@@ -3519,6 +3667,7 @@ class $$PlatosTableTableManager
                 nombre: nombre,
                 puntuacion: puntuacion,
                 comentario: comentario,
+                fotoPath: fotoPath,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -3530,6 +3679,7 @@ class $$PlatosTableTableManager
                 required String nombre,
                 required double puntuacion,
                 Value<String?> comentario = const Value.absent(),
+                Value<String?> fotoPath = const Value.absent(),
                 required DateTime createdAt,
                 Value<int> rowid = const Value.absent(),
               }) => PlatosCompanion.insert(
@@ -3539,6 +3689,7 @@ class $$PlatosTableTableManager
                 nombre: nombre,
                 puntuacion: puntuacion,
                 comentario: comentario,
+                fotoPath: fotoPath,
                 createdAt: createdAt,
                 rowid: rowid,
               ),

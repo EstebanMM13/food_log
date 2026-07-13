@@ -17,8 +17,11 @@ abstract class PlatoRepository {
     required String nombre,
     required double puntuacion,
     String? comentario,
+    String? fotoPath,
   });
 
+  /// Replaces the full row. If [plato]'s `fotoPath` differs from what was
+  /// stored before the update, the old photo file on disk is deleted.
   Future<void> update(Plato plato);
 
   Future<void> delete(String id);

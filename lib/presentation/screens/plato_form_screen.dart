@@ -2,9 +2,11 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/photo_storage.dart';
 import '../../data/local/app_database.dart';
 import '../../domain/tipo_plato.dart';
 import '../providers/repository_providers.dart';
+import '../widgets/photo_picker_field.dart';
 
 /// Add/edit form for a dish: type (dropdown + free-text fallback for
 /// values that don't fit the enum), name and score (0-10 slider).
@@ -42,7 +44,19 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
   late final TextEditingController _comentarioController;
   late TipoPlato _tipoSeleccionado;
   late double _puntuacion;
+  late final String? _fotoPathOriginal;
+  String? _fotoPath;
   bool _guardando = false;
+  bool _guardado = false;
+
+  /// Every photo path that was ever assigned to [_fotoPath] during this
+  /// form session (excluding [_fotoPathOriginal]), whether or not it ended
+  /// up being the one actually saved. A user can pick photo A, then replace
+  /// it with photo B before saving — A is already copied to disk by then,
+  /// so without tracking it here it would never get cleaned up. On
+  /// [dispose] everything in this set except the one truly persisted is
+  /// deleted.
+  final Set<String> _fotosTemporales = {};
 
   bool get _esEdicion => widget.plato != null;
 
@@ -75,10 +89,22 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
     );
     _comentarioController = TextEditingController(text: widget.plato?.comentario ?? '');
     _puntuacion = widget.plato?.puntuacion ?? 5;
+    _fotoPathOriginal = widget.plato?.fotoPath;
+    _fotoPath = _fotoPathOriginal;
   }
 
   @override
   void dispose() {
+    // Every intermediate/discarded photo picked during this session becomes
+    // an orphaned file on disk unless nothing in the DB points to it. The
+    // one that actually got saved (if any) must survive; every other one
+    // gets cleaned up here.
+    final fotoGuardada = _guardado ? _fotoPath : null;
+    for (final foto in _fotosTemporales) {
+      if (foto != fotoGuardada) {
+        PhotoStorage.borrarSiExiste(foto);
+      }
+    }
     _nombreController.dispose();
     _tipoLibreController.dispose();
     _comentarioController.dispose();
@@ -101,6 +127,7 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
         nombre: nombre,
         puntuacion: _puntuacion,
         comentario: Value(comentario),
+        fotoPath: Value(_fotoPath),
       ));
     } else {
       await repo.insert(
@@ -109,9 +136,11 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
         nombre: nombre,
         puntuacion: _puntuacion,
         comentario: comentario,
+        fotoPath: _fotoPath,
       );
     }
 
+    _guardado = true;
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -124,6 +153,16 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            PhotoPickerField(
+              fotoPath: _fotoPath,
+              onFotoPathChanged: (nuevaRuta) => setState(() {
+                if (nuevaRuta != null && nuevaRuta != _fotoPathOriginal) {
+                  _fotosTemporales.add(nuevaRuta);
+                }
+                _fotoPath = nuevaRuta;
+              }),
+            ),
+            const SizedBox(height: 16),
             DropdownButtonFormField<TipoPlato>(
               initialValue: _tipoSeleccionado,
               decoration: const InputDecoration(labelText: 'Tipo'),

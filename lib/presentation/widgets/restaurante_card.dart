@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../domain/models/restaurante_resumen.dart';
+import 'foto_thumbnail.dart';
 
 /// One row in the home list: name — location — score as the main line
 /// (matching the mockup), with visit count and tags shown underneath as
@@ -24,6 +25,7 @@ class RestauranteCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
         onTap: onTap,
+        leading: FotoThumbnail(fotoPath: restaurante.fotoPath, size: 48),
         title: Row(
           children: [
             Expanded(

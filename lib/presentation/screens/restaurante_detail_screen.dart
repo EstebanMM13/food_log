@@ -11,6 +11,7 @@ import '../providers/recordatorio_providers.dart';
 import '../providers/repository_providers.dart';
 import '../providers/restaurantes_provider.dart';
 import '../widgets/categoria_platos_section.dart';
+import '../widgets/foto_thumbnail.dart';
 import 'restaurante_form_screen.dart';
 
 class RestauranteDetailScreen extends ConsumerWidget {
@@ -121,6 +122,17 @@ class RestauranteDetailScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Center(
+            child: GestureDetector(
+              onTap: () => _verFotoGrande(context, restaurante!.nombre, restaurante.fotoPath),
+              child: FotoThumbnail(
+                fotoPath: restaurante.fotoPath,
+                size: 140,
+                borderRadius: const BorderRadius.all(Radius.circular(16)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           if (restaurante.ubicacion != null && restaurante.ubicacion!.isNotEmpty)
             Row(
               children: [
@@ -334,6 +346,26 @@ class RestauranteDetailScreen extends ConsumerWidget {
     );
   }
 
+  void _verFotoGrande(BuildContext context, String nombre, String? fotoPath) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(nombre),
+        content: FotoThumbnail(
+          fotoPath: fotoPath,
+          size: 280,
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _verNombreCompleto(BuildContext context, String nombre) {
     showDialog<void>(
       context: context,
@@ -443,6 +475,7 @@ class RestauranteDetailScreen extends ConsumerWidget {
             ubicacion: restaurante.ubicacion,
             notas: nuevoTexto.isEmpty ? null : nuevoTexto,
             tags: tags.map((t) => t.nombre).toList(),
+            fotoPath: restaurante.fotoPath,
           );
     }
   }

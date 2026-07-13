@@ -34,16 +34,24 @@ abstract class RestauranteRepository {
     String? notas,
     List<String> tags = const [],
     int visitas = 0,
+    String? fotoPath,
   });
 
   /// Updates a restaurant's fields and replaces its tag set with [tags]
-  /// (by name — unknown names are created).
+  /// (by name — unknown names are created). [fotoPath] is required (though
+  /// nullable) rather than optional-with-a-null-default: this is a
+  /// "always pass the intended value" field like [ubicacion]/[notas], and a
+  /// caller that forgot to pass it would otherwise silently clear the photo.
+  /// Callers that don't touch the photo must pass the restaurant's current
+  /// [fotoPath] back in. If it changes from what was stored before, the old
+  /// file on disk is deleted.
   Future<void> update({
     required String id,
     required String nombre,
     String? ubicacion,
     String? notas,
     List<String> tags = const [],
+    required String? fotoPath,
   });
 
   Future<void> delete(String id);

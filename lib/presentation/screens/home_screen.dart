@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -6,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/local/backup_service.dart';
+import '../providers/database_provider.dart';
 import '../providers/repository_providers.dart';
 import '../providers/restaurantes_provider.dart';
 import '../providers/theme_mode_provider.dart';
@@ -174,7 +174,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _exportarDatos() async {
     try {
-      final json = await exportDatabaseToJson(
+      final zipBytes = await exportarComoZip(
         restaurantes: ref.read(restauranteRepositoryProvider),
         platos: ref.read(platoRepositoryProvider),
         recordatorios: ref.read(recordatorioRepositoryProvider),
@@ -184,10 +184,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final fecha = DateTime.now().toIso8601String().split('T').first;
       final path = await FilePicker.saveFile(
         dialogTitle: 'Guardar copia de seguridad',
-        fileName: 'foodlog_backup_$fecha.json',
+        fileName: 'foodlog_backup_$fecha.zip',
         type: FileType.custom,
-        allowedExtensions: ['json'],
-        bytes: Uint8List.fromList(utf8.encode(json)),
+        allowedExtensions: ['zip'],
+        bytes: Uint8List.fromList(zipBytes),
       );
 
       if (!mounted) return;
@@ -209,7 +209,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final resultado = await FilePicker.pickFiles(
         dialogTitle: 'Seleccionar copia de seguridad',
         type: FileType.custom,
-        allowedExtensions: ['json'],
+        allowedExtensions: ['zip', 'json'],
         withData: true,
       );
       if (resultado == null || resultado.files.isEmpty) return; // Cancelado.
@@ -219,8 +219,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         throw Exception('No se pudo leer el archivo seleccionado.');
       }
 
-      final resumen = await importDatabaseFromJson(
-        utf8.decode(bytes),
+      final resumen = await importarDesdeZip(
+        bytes,
+        db: ref.read(databaseProvider),
         restaurantes: ref.read(restauranteRepositoryProvider),
         platos: ref.read(platoRepositoryProvider),
         recordatorios: ref.read(recordatorioRepositoryProvider),
@@ -236,6 +237,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             'y ${resumen.categorias} categorías.',
           ),
         ),
+      );
+    } on BackupInvalidoException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$e')),
       );
     } catch (e) {
       if (!mounted) return;

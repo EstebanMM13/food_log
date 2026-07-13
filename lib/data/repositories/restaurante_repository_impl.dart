@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../core/ids.dart';
+import '../../core/photo_storage.dart';
 import '../../domain/repositories/restaurante_repository.dart';
 import '../local/app_database.dart';
 
@@ -64,6 +65,7 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
     String? notas,
     List<String> tags = const [],
     int visitas = 0,
+    String? fotoPath,
   }) async {
     final id = newId();
     final now = DateTime.now();
@@ -74,6 +76,7 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
             ubicacion: Value(ubicacion),
             notas: Value(notas),
             visitas: Value(visitas),
+            fotoPath: Value(fotoPath),
             createdAt: now,
             updatedAt: now,
           ),
@@ -89,20 +92,33 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
     String? ubicacion,
     String? notas,
     List<String> tags = const [],
+    required String? fotoPath,
   }) async {
+    final anterior = await getById(id);
     await (_db.update(_db.restaurantes)..where((t) => t.id.equals(id))).write(
       RestaurantesCompanion(
         nombre: Value(nombre),
         ubicacion: Value(ubicacion),
         notas: Value(notas),
+        fotoPath: Value(fotoPath),
         updatedAt: Value(DateTime.now()),
       ),
     );
+    // Database writes (row + tag set) happen unconditionally; the old photo
+    // file cleanup below is best-effort and must never block or fail this.
     await _replaceTags(id, tags);
+    if (anterior != null && anterior.fotoPath != fotoPath) {
+      await PhotoStorage.borrarSiExiste(anterior.fotoPath);
+    }
   }
 
   @override
   Future<void> delete(String id) async {
+    final restaurante = await getById(id);
+    final platosDelRestaurante = await (_db.select(_db.platos)
+          ..where((t) => t.restauranteId.equals(id)))
+        .get();
+
     await (_db.delete(_db.recordatorios)
           ..where((t) => t.restauranteId.equals(id)))
         .go();
@@ -114,6 +130,13 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
     await (_db.delete(_db.categorias)..where((t) => t.restauranteId.equals(id)))
         .go();
     await (_db.delete(_db.restaurantes)..where((t) => t.id.equals(id))).go();
+
+    for (final plato in platosDelRestaurante) {
+      await PhotoStorage.borrarSiExiste(plato.fotoPath);
+    }
+    if (restaurante != null) {
+      await PhotoStorage.borrarSiExiste(restaurante.fotoPath);
+    }
   }
 
   @override

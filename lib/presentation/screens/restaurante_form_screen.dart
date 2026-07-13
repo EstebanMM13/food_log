@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/photo_storage.dart';
 import '../../data/local/app_database.dart';
 import '../providers/repository_providers.dart';
 import '../providers/restaurantes_provider.dart';
+import '../widgets/photo_picker_field.dart';
 
 /// Add/edit form for a restaurant: name, location, tags (as editable
 /// chips) and free-text notes. Pass [restaurante] and [tagsIniciales] to
@@ -29,7 +31,19 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
   late final TextEditingController _notasController;
   final _tagInputController = TextEditingController();
   late List<String> _tags;
+  late final String? _fotoPathOriginal;
+  String? _fotoPath;
   bool _guardando = false;
+  bool _guardado = false;
+
+  /// Every photo path that was ever assigned to [_fotoPath] during this
+  /// form session (excluding [_fotoPathOriginal]), whether or not it ended
+  /// up being the one actually saved. A user can pick photo A, then replace
+  /// it with photo B before saving — A is already copied to disk by then,
+  /// so without tracking it here it would never get cleaned up. On
+  /// [dispose] everything in this set except the one truly persisted is
+  /// deleted.
+  final Set<String> _fotosTemporales = {};
 
   bool get _esEdicion => widget.restaurante != null;
 
@@ -40,10 +54,22 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
     _ubicacionController = TextEditingController(text: widget.restaurante?.ubicacion ?? '');
     _notasController = TextEditingController(text: widget.restaurante?.notas ?? '');
     _tags = [...widget.tagsIniciales];
+    _fotoPathOriginal = widget.restaurante?.fotoPath;
+    _fotoPath = _fotoPathOriginal;
   }
 
   @override
   void dispose() {
+    // Every intermediate/discarded photo picked during this session becomes
+    // an orphaned file on disk unless nothing in the DB points to it. The
+    // one that actually got saved (if any) must survive; every other one
+    // gets cleaned up here.
+    final fotoGuardada = _guardado ? _fotoPath : null;
+    for (final foto in _fotosTemporales) {
+      if (foto != fotoGuardada) {
+        PhotoStorage.borrarSiExiste(foto);
+      }
+    }
     _nombreController.dispose();
     _ubicacionController.dispose();
     _notasController.dispose();
@@ -75,6 +101,7 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
         ubicacion: ubicacion.isEmpty ? null : ubicacion,
         notas: notas.isEmpty ? null : notas,
         tags: _tags,
+        fotoPath: _fotoPath,
       );
     } else {
       await repo.insert(
@@ -82,9 +109,11 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
         ubicacion: ubicacion.isEmpty ? null : ubicacion,
         notas: notas.isEmpty ? null : notas,
         tags: _tags,
+        fotoPath: _fotoPath,
       );
     }
 
+    _guardado = true;
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -99,6 +128,16 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            PhotoPickerField(
+              fotoPath: _fotoPath,
+              onFotoPathChanged: (nuevaRuta) => setState(() {
+                if (nuevaRuta != null && nuevaRuta != _fotoPathOriginal) {
+                  _fotosTemporales.add(nuevaRuta);
+                }
+                _fotoPath = nuevaRuta;
+              }),
+            ),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _nombreController,
               decoration: const InputDecoration(labelText: 'Nombre'),

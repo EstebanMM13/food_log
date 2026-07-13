@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../data/local/app_database.dart';
 import '../../domain/tipo_plato.dart';
 import '../screens/plato_form_screen.dart';
+import 'foto_thumbnail.dart';
 
 /// Collapsible category section shown in the restaurant detail screen
 /// (e.g. "Entrantes", "Platos", "Postres"). Collapsed, it shows the
@@ -155,6 +156,8 @@ class _PlatoRow extends StatelessWidget {
 
   bool get _tieneComentario => plato.comentario != null && plato.comentario!.isNotEmpty;
 
+  bool get _tieneFoto => plato.fotoPath != null && plato.fotoPath!.isNotEmpty;
+
   void _verComentario(BuildContext context) {
     showDialog<void>(
       context: context,
@@ -193,12 +196,21 @@ class _PlatoRow extends StatelessWidget {
     }
   }
 
-  void _verNombreCompleto(BuildContext context) {
+  void _verDetallePlato(BuildContext context) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Nombre completo'),
-        content: Text(plato.nombre),
+        title: Text(plato.nombre),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FotoThumbnail(
+              fotoPath: plato.fotoPath,
+              size: 220,
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -212,9 +224,21 @@ class _PlatoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: GestureDetector(
-        onTap: () => _verNombreCompleto(context),
-        child: Text(plato.nombre, maxLines: 1, overflow: TextOverflow.ellipsis),
+      onTap: () => _verDetallePlato(context),
+      title: Row(
+        children: [
+          Flexible(
+            child: Text(plato.nombre, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
+          if (_tieneFoto) ...[
+            const SizedBox(width: 6),
+            Icon(
+              Icons.image_outlined,
+              size: 15,
+              color: Theme.of(context).extension<BrandAccentColors>()?.secondary,
+            ),
+          ],
+        ],
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,

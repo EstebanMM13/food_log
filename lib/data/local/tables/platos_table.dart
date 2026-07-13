@@ -15,6 +15,11 @@ class Platos extends Table {
   TextColumn get nombre => text()();
   RealColumn get puntuacion => real()();
   TextColumn get comentario => text().nullable()();
+
+  /// Absolute path to a photo of this dish, copied into the app's own
+  /// documents directory (see lib/core/photo_storage.dart). Null if no
+  /// photo was ever set.
+  TextColumn get fotoPath => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 
   @override

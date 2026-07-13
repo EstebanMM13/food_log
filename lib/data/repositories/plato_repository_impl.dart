@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../core/ids.dart';
+import '../../core/photo_storage.dart';
 import '../../domain/repositories/plato_repository.dart';
 import '../local/app_database.dart';
 
@@ -29,6 +30,7 @@ class PlatoRepositoryImpl implements PlatoRepository {
     required String nombre,
     required double puntuacion,
     String? comentario,
+    String? fotoPath,
   }) async {
     final id = newId();
     await _db.into(_db.platos).insert(
@@ -39,6 +41,7 @@ class PlatoRepositoryImpl implements PlatoRepository {
             nombre: nombre,
             puntuacion: puntuacion,
             comentario: Value.absentIfNull(comentario),
+            fotoPath: Value.absentIfNull(fotoPath),
             createdAt: DateTime.now(),
           ),
         );
@@ -47,11 +50,21 @@ class PlatoRepositoryImpl implements PlatoRepository {
 
   @override
   Future<void> update(Plato plato) async {
+    final anterior =
+        await (_db.select(_db.platos)..where((t) => t.id.equals(plato.id))).getSingleOrNull();
     await _db.update(_db.platos).replace(plato);
+    if (anterior != null && anterior.fotoPath != plato.fotoPath) {
+      await PhotoStorage.borrarSiExiste(anterior.fotoPath);
+    }
   }
 
   @override
   Future<void> delete(String id) async {
+    final plato =
+        await (_db.select(_db.platos)..where((t) => t.id.equals(id))).getSingleOrNull();
     await (_db.delete(_db.platos)..where((t) => t.id.equals(id))).go();
+    if (plato != null) {
+      await PhotoStorage.borrarSiExiste(plato.fotoPath);
+    }
   }
 }

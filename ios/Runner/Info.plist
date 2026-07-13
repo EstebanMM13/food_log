@@ -47,5 +47,9 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSCameraUsageDescription</key>
+		<string>Para añadir una foto a tus restaurantes/platos.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Para añadir una foto a tus restaurantes/platos desde tu galería.</string>
 	</dict>
 </plist>
