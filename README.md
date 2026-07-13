@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/branding/icon.png" width="112" alt="FoodLog icon" />
+  <img src="assets/branding/icon.png" width="112" alt="Food Log icon" />
 </p>
 
-<h1 align="center">FoodLog</h1>
+<h1 align="center">Food Log</h1>
 
 <p align="center">
   A local-first Flutter app for tracking restaurants, dishes and ratings — the restaurant notebook you'd otherwise keep scattered across notes apps, turned into something that actually queries and aggregates your data.
@@ -24,7 +24,7 @@ worked, but it wasn't built for the job: no structured queries, no shared
 access, and any pattern across restaurants (best-rated dish type, most-visited
 places, tags I keep gravitating to) had to be eyeballed by hand.
 
-FoodLog is that habit rebuilt as a proper app: same data, real relational
+Food Log is that habit rebuilt as a proper app: same data, real relational
 storage, and a stats screen that answers the questions the notes never could.
 
 ## Features

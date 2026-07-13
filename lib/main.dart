@@ -15,7 +15,7 @@ class MiApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'FoodLog',
+      title: 'Food Log',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ref.watch(themeModeProvider).value ?? ThemeMode.system,

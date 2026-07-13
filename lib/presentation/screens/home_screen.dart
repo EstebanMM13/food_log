@@ -90,7 +90,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               PopupMenuDivider(),
               PopupMenuItem(
                 value: _DatosAction.informacion,
-                child: Text('Acerca de FoodLog'),
+                child: Text('Acerca de Food Log'),
               ),
             ],
           ),

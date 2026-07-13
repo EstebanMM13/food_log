@@ -16,7 +16,7 @@ Future<bool> introYaVista() async {
   return prefs.getBool(_prefKeyIntroVista) ?? false;
 }
 
-/// Explains what FoodLog is for, with an opt-in checkbox to seed a handful
+/// Explains what Food Log is for, with an opt-in checkbox to seed a handful
 /// of fictional restaurants. Shown automatically the first time the app
 /// launches, and reachable afterwards from the overflow menu.
 Future<void> mostrarDialogoIntro(BuildContext context, WidgetRef ref) async {
@@ -26,13 +26,13 @@ Future<void> mostrarDialogoIntro(BuildContext context, WidgetRef ref) async {
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) => AlertDialog(
-        title: const Text('¡Bienvenido a FoodLog!'),
+        title: const Text('¡Bienvenido a Food Log!'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'FoodLog es tu cuaderno de restaurantes: anota los bares y '
+              'Food Log es tu cuaderno de restaurantes: anota los bares y '
               'restaurantes que visitas, puntúa cada plato que pruebes y '
               'consulta estadísticas sobre tus valoraciones.',
             ),

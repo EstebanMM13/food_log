@@ -76,7 +76,7 @@ flutter_launcher_icons:
     generate: true
 
 # Config for the flutter_native_splash generator (dart run flutter_native_splash:create).
-# Shows the icon centered with the "FoodLog" wordmark pinned below it as a
+# Shows the icon centered with the "Food Log" wordmark pinned below it as a
 # branding image. On Android 12+ this relies on the native
 # windowSplashScreenBrandingImage API (android_12 section below) instead of a
 # second Flutter-side screen — without it, Android 12+ ignores this config

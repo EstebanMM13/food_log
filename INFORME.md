@@ -1,10 +1,10 @@
-# Informe del proyecto — FoodLog
+# Informe del proyecto — Food Log
 
 _Última actualización: 2026-07-05_
 
 ## 1. De qué va este proyecto
 
-FoodLog nace de un hábito que ya llevabas tiempo practicando en Obsidian
+Food Log nace de un hábito que ya llevabas tiempo practicando en Obsidian
 (`D:\OBSIDIAN\Personal\Comida`): cada vez que ibas a un bar o restaurante,
 apuntabas una nota con lo que pedías y una puntuación, para saber qué
 merece la pena la próxima vez (o para que un conocido lo consulte antes de
