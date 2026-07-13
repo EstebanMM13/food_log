@@ -64,7 +64,7 @@ dev_dependencies:
 flutter_launcher_icons:
   image_path: "assets/branding/icon.png"
   android: true
-  adaptive_icon_background: "#F5EDE2"
+  adaptive_icon_background: "#EFE0C9"
   adaptive_icon_foreground: "assets/branding/icon.png"
   ios: true
   remove_alpha_ios: true
@@ -82,25 +82,30 @@ flutter_launcher_icons:
 # second Flutter-side screen — without it, Android 12+ ignores this config
 # entirely and falls back to a plain icon on a black background.
 #
-# icon.png's line art is brandNavy, which disappears against the navy dark
+# icon.png's line art is brandNavy, which disappears against the dark
 # background — icon_dark.png is the same icon recolored to creamBackground
-# so it stays visible in dark mode.
+# so it stays visible in dark mode. wordmark.png/wordmark_dark.png are the
+# "FOOD LOG" crop recolored to brandOrangeInk (light, AA-safe) and flat
+# brandOrange (dark, already high-contrast on the sepia background) to match
+# lib/core/theme/app_theme.dart's own light/dark ink logic.
 flutter_native_splash:
   image: "assets/branding/icon.png"
   image_dark: "assets/branding/icon_dark.png"
-  color: "#F5EDE2"
-  color_dark: "#2A3647"
+  color: "#EFE0C9"
+  color_dark: "#33261C"
   branding: "assets/branding/wordmark.png"
+  branding_dark: "assets/branding/wordmark_dark.png"
   branding_mode: bottom
 
   android_12:
     image: "assets/branding/icon.png"
     image_dark: "assets/branding/icon_dark.png"
-    icon_background_color: "#F5EDE2"
-    color: "#F5EDE2"
-    icon_background_color_dark: "#2A3647"
-    color_dark: "#2A3647"
+    icon_background_color: "#EFE0C9"
+    color: "#EFE0C9"
+    icon_background_color_dark: "#33261C"
+    color_dark: "#33261C"
     branding: "assets/branding/wordmark.png"
+    branding_dark: "assets/branding/wordmark_dark.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

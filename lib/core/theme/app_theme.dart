@@ -1,30 +1,41 @@
 import 'package:flutter/material.dart';
 
-/// App-wide Material theme. The seed color matches the warm, paper-like
-/// palette used by the original prototype `main.dart`.
+/// App-wide Material theme. "Cuaderno" palette — warm parchment, terracotta,
+/// sepia ink — replacing the earlier cream/orange/navy trio. Field names are
+/// kept the same as before on purpose, so nothing else in the app needs to
+/// change beyond this file: only the hex VALUES moved.
 class AppTheme {
   AppTheme._();
 
-  static const Color brandOrange = Color(0xffff7b4b);
-  static const Color creamBackground = Color(0xfff5ede2);
-  static const Color brandNavy = Color(0xff2a3647);
+  /// Terracotta — was `#FF7B4B`. For solid FILLS (buttons, badges, icon
+  /// accents), not for text on a light surface — see [brandOrangeInk].
+  static const Color brandOrange = Color(0xffd96b3a);
 
-  /// Darker tint of [brandOrange], same hue — for TEXT/icons drawn directly
-  /// on [creamBackground] or other light surfaces. [brandOrange] itself is
-  /// ~2.25:1 against cream (fails WCAG AA); this is ~5.1:1. Use for the
-  /// AppBar title, links, and any orange label text. Keep [brandOrange]
-  /// itself for solid fills (buttons, badges, icon strokes).
+  /// Warm parchment — was the flatter `#F5EDE2` cream.
+  static const Color creamBackground = Color(0xffefe0c9);
+
+  /// Sepia ink — was navy `#2A3647`. Primary "ink" color for text/structure.
+  static const Color brandNavy = Color(0xff33261c);
+
+  /// Darker terracotta for TEXT/icons directly on [creamBackground] or other
+  /// light surfaces — ~4.6:1 against the new parchment (still passes AA;
+  /// [brandOrange] itself is ~2.7:1 and fails). Unchanged from before — this
+  /// exact hue already worked against both the old cream and new parchment.
   static const Color brandOrangeInk = Color(0xffa8451f);
 
-  /// Rating/star color. Same warm family as [brandOrange] but distinct, so
-  /// ratings don't compete visually with brand accents.
+  /// New secondary accent — muted moss, same warm-earthy family as the rest
+  /// of the palette. For tags/labels/success states that shouldn't compete
+  /// with the terracotta brand accent.
+  static const Color mossAccent = Color(0xff8a8256);
+
+  /// Rating/star color. Unchanged — still reads well against white cards;
+  /// only use as an icon fill, not as flat text on parchment.
   static const Color ratingAmber = Color(0xffe8a23d);
 
   /// [brandNavy], lightened to the same hue family, for use as "strong"
   /// text/icon color on the dark theme's dark surfaces — brandNavy itself
-  /// is near-invisible on a dark background. Derived from
-  /// `ColorScheme.fromSeed(seedColor: brandNavy, brightness: dark).secondary`.
-  static const Color _brandNavyOnDark = Color(0xffbcc7db);
+  /// is near-invisible on a dark background.
+  static const Color _brandNavyOnDark = Color(0xffcdbfae);
 
   static ThemeData get light => ThemeData(
         useMaterial3: true,
@@ -38,8 +49,8 @@ class AppTheme {
             fontSize: 20,
           ),
         ),
-        // Buttons filled with brandOrange should use navy (not white) text —
-        // navy-on-orange is ~4.7:1, white-on-orange is ~2.6:1 (fails AA).
+        // Buttons filled with brandOrange should use ink (not white) text —
+        // ink-on-terracotta clears AA, white-on-terracotta does not.
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: brandOrange,
@@ -52,17 +63,11 @@ class AppTheme {
             accentInk: brandOrangeInk,
             strongText: brandNavy,
             rating: ratingAmber,
+            secondary: mossAccent,
           ),
         ],
       );
 
-  /// Dark counterpart of [light]. Keeps the same warm, paper-like brand
-  /// feel instead of a generic Material grey: the seed stays
-  /// [creamBackground] (so surfaces/accents share the light theme's warm
-  /// hue, just inverted in brightness), while the AppBar uses the brand's
-  /// own dark color ([brandNavy]) as background — mirroring how [light]
-  /// uses [creamBackground] literally for its AppBar — with [brandOrange]
-  /// as foreground, same as in [light].
   static ThemeData get dark => ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -90,20 +95,12 @@ class AppTheme {
             accentInk: brandOrange,
             strongText: _brandNavyOnDark,
             rating: ratingAmber,
+            secondary: mossAccent,
           ),
         ],
       );
 }
 
-/// Brand accent colors that don't map cleanly onto Material 3's generated
-/// [ColorScheme] roles (see [AppTheme.dark] doc for why: seeding the scheme
-/// with [AppTheme.creamBackground] does not reproduce [AppTheme.brandOrange]
-/// or [AppTheme.brandNavy] as `primary`/`onSurface` — those come out as a
-/// muddy brown-gold instead). Widgets that want the brand's orange accent or
-/// navy "ink" color — and want it to adapt automatically between [AppTheme.light]
-/// and [AppTheme.dark] — should read this extension via
-/// `Theme.of(context).extension<BrandAccentColors>()` instead of referencing
-/// `AppTheme.brandOrange` / `AppTheme.brandNavy` directly.
 @immutable
 class BrandAccentColors extends ThemeExtension<BrandAccentColors> {
   const BrandAccentColors({
@@ -111,27 +108,23 @@ class BrandAccentColors extends ThemeExtension<BrandAccentColors> {
     required this.accentInk,
     required this.strongText,
     required this.rating,
+    required this.secondary,
   });
 
-  /// The brand's orange accent for solid FILLS (buttons, badges, icon
-  /// strokes) — not for text on a light surface, see [accentInk].
-  /// Identical value in light and dark — it has strong contrast against
-  /// both the cream background and the dark theme's dark surfaces.
+  /// Terracotta, for solid fills (buttons, badges, icon strokes).
   final Color accent;
 
-  /// Darker tint of [accent] for TEXT/icons drawn directly on a light
-  /// surface (AppBar title, labels, links). In dark mode this equals
-  /// [accent] again — the dark surface already gives it enough contrast.
+  /// Darker terracotta, for text/icons on a light surface.
   final Color accentInk;
 
-  /// The brand's "ink" color for emphasized text/icons on a regular
-  /// surface (not the AppBar, which already gets its own explicit color).
-  /// Navy in light mode; a lightened tint of the same hue in dark mode.
+  /// Ink color for emphasized text/icons on a regular surface.
   final Color strongText;
 
-  /// Star / rating color — same warm family as [accent], kept distinct so
-  /// ratings don't read as a brand-accent element.
+  /// Star / rating color.
   final Color rating;
+
+  /// Moss — secondary accent for tags/labels.
+  final Color secondary;
 
   @override
   BrandAccentColors copyWith({
@@ -139,12 +132,14 @@ class BrandAccentColors extends ThemeExtension<BrandAccentColors> {
     Color? accentInk,
     Color? strongText,
     Color? rating,
+    Color? secondary,
   }) {
     return BrandAccentColors(
       accent: accent ?? this.accent,
       accentInk: accentInk ?? this.accentInk,
       strongText: strongText ?? this.strongText,
       rating: rating ?? this.rating,
+      secondary: secondary ?? this.secondary,
     );
   }
 
@@ -156,6 +151,7 @@ class BrandAccentColors extends ThemeExtension<BrandAccentColors> {
       accentInk: Color.lerp(accentInk, other.accentInk, t) ?? accentInk,
       strongText: Color.lerp(strongText, other.strongText, t) ?? strongText,
       rating: Color.lerp(rating, other.rating, t) ?? rating,
+      secondary: Color.lerp(secondary, other.secondary, t) ?? secondary,
     );
   }
 }
