@@ -88,11 +88,16 @@ class RestauranteDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          restaurante.nombre,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).extension<BrandAccentColors>()?.strongText,
+        title: GestureDetector(
+          onTap: () => _verNombreCompleto(context, restaurante!.nombre),
+          child: Text(
+            restaurante.nombre,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).extension<BrandAccentColors>()?.strongText,
+            ),
           ),
         ),
         actions: [
@@ -324,6 +329,22 @@ class RestauranteDetailScreen extends ConsumerWidget {
                 onPressed: () => _confirmarEliminarRecordatorio(context, ref, recordatorio.id),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  void _verNombreCompleto(BuildContext context, String nombre) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nombre completo'),
+        content: Text(nombre),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
         ],
       ),
     );
