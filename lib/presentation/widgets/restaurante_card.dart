@@ -58,7 +58,8 @@ class RestauranteCard extends StatelessWidget {
           children: [
             const SizedBox(height: 4),
             Text('${restaurante.visitas} visitas', style: subtitleStyle),
-            if (resumen.tags.isNotEmpty)
+            if (resumen.tags.isNotEmpty) ...[
+              const SizedBox(height: 6),
               Wrap(
                 spacing: 6,
                 children: resumen.tags
@@ -69,6 +70,7 @@ class RestauranteCard extends StatelessWidget {
                         ))
                     .toList(),
               ),
+            ],
           ],
         ),
         isThreeLine: resumen.tags.isNotEmpty,
