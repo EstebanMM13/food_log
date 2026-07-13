@@ -81,8 +81,13 @@ flutter_launcher_icons:
 # windowSplashScreenBrandingImage API (android_12 section below) instead of a
 # second Flutter-side screen — without it, Android 12+ ignores this config
 # entirely and falls back to a plain icon on a black background.
+#
+# icon.png's line art is brandNavy, which disappears against the navy dark
+# background — icon_dark.png is the same icon recolored to creamBackground
+# so it stays visible in dark mode.
 flutter_native_splash:
   image: "assets/branding/icon.png"
+  image_dark: "assets/branding/icon_dark.png"
   color: "#F5EDE2"
   color_dark: "#2A3647"
   branding: "assets/branding/wordmark.png"
@@ -90,6 +95,7 @@ flutter_native_splash:
 
   android_12:
     image: "assets/branding/icon.png"
+    image_dark: "assets/branding/icon_dark.png"
     icon_background_color: "#F5EDE2"
     color: "#F5EDE2"
     icon_background_color_dark: "#2A3647"
