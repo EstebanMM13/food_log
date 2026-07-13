@@ -66,6 +66,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // First launch shows the intro dialog on top of everything else; dismiss
+    // it before interacting with the AppBar underneath.
+    await tester.tap(find.text('Cerrar'));
+    await tester.pumpAndSettle();
+
     // Follows the system, which is currently light -> shows the "moon" icon
     // (tapping it switches to explicit dark).
     expect(find.byIcon(Icons.dark_mode), findsOneWidget);

@@ -9,6 +9,7 @@ import '../../data/local/backup_service.dart';
 import '../providers/repository_providers.dart';
 import '../providers/restaurantes_provider.dart';
 import '../providers/theme_mode_provider.dart';
+import '../widgets/intro_dialog.dart';
 import '../widgets/restaurante_card.dart';
 import 'estadisticas_screen.dart';
 import 'restaurante_detail_screen.dart';
@@ -23,6 +24,18 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String _busqueda = '';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _mostrarIntroSiCorresponde());
+  }
+
+  Future<void> _mostrarIntroSiCorresponde() async {
+    if (await introYaVista()) return;
+    if (!mounted) return;
+    await mostrarDialogoIntro(context, ref);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +74,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   _exportarDatos();
                 case _DatosAction.importar:
                   _importarDatos();
+                case _DatosAction.informacion:
+                  mostrarDialogoIntro(context, ref);
               }
             },
             itemBuilder: (context) => const [
@@ -71,6 +86,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               PopupMenuItem(
                 value: _DatosAction.importar,
                 child: Text('Importar datos'),
+              ),
+              PopupMenuDivider(),
+              PopupMenuItem(
+                value: _DatosAction.informacion,
+                child: Text('Acerca de FoodLog'),
               ),
             ],
           ),
@@ -226,4 +246,4 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-enum _DatosAction { exportar, importar }
+enum _DatosAction { exportar, importar, informacion }
