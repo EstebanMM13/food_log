@@ -56,7 +56,26 @@ storage, and a stats screen that answers the questions the notes never could.
 
 ## Screenshots
 
-> _Coming soon._
+<table>
+  <tr>
+    <td align="center">
+      <img src="assets/screenshots/home.jpg" width="200" alt="Restaurant list" /><br />
+      Restaurant list
+    </td>
+    <td align="center">
+      <img src="assets/screenshots/restaurant-detail.jpg" width="200" alt="Restaurant detail" /><br />
+      Restaurant detail
+    </td>
+    <td align="center">
+      <img src="assets/screenshots/restaurant-dishes.jpg" width="200" alt="Dishes by category" /><br />
+      Dishes by category
+    </td>
+    <td align="center">
+      <img src="assets/screenshots/stats.jpg" width="200" alt="Statistics" /><br />
+      Statistics
+    </td>
+  </tr>
+</table>
 
 ## Tech stack & architecture
 
