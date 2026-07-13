@@ -1,6 +1,6 @@
 # Informe del proyecto — Food Log
 
-_Última actualización: 2026-07-05_
+_Última actualización: 2026-07-13_
 
 ## 1. De qué va este proyecto
 
@@ -25,15 +25,23 @@ en dos fases explícitas:
 Esa decisión de "local ahora, compartido después" es la que condicionó
 varias decisiones técnicas de la fase 1, explicadas abajo.
 
+Desde la última revisión de este informe, el proyecto pasó de prototipo
+sin commitear a un repo con 36 commits, licencia, CI y un release con APK
+descargable — y de un MVP funcional a una app con identidad visual propia
+("Cuaderno": paleta parchment/terracota/sepia) y varias mejoras de UX
+pedidas tras usarla en el móvil real.
+
 ## 2. Arquitectura y decisiones técnicas
 
 | Decisión | Elegido | Por qué |
 |---|---|---|
-| Persistencia | `drift` sobre SQLite | El prototipo inicial usaba `sqflite` con SQL crudo y mapeo manual fila↔objeto (sin migraciones versionadas). Con solo 5 tablas, `drift` da esquema type-safe, migraciones y **streams reactivos** — la lista se actualiza sola al insertar un plato, sin `setState` disperso. |
+| Persistencia | `drift` sobre SQLite | El prototipo inicial usaba `sqflite` con SQL crudo y mapeo manual fila↔objeto (sin migraciones versionadas). Con solo 6 tablas, `drift` da esquema type-safe, migraciones y **streams reactivos** — la lista se actualiza sola al insertar un plato, sin `setState` disperso. |
 | IDs | `UUID` (String), no autoincremental | Consecuencia directa de la fase 2 (compartir/backend): un ID autoincremental local choca en cuanto sincronizas entre dispositivos o usuarios. Se paga el coste ahora para no migrar datos después. |
 | Estado | `Riverpod` | Reemplazo estándar de `Provider` en el ecosistema Flutter actual; se lleva bien con streams async de `drift` y no depende de `BuildContext` para leer estado. |
-| Capas | `domain` / `data` / `presentation`, pragmático | `domain` define contratos (interfaces de repositorio), `data` los implementa con drift, `presentation` consume vía providers. Sin un caso de uso por cada acción — sería sobre-ingeniería para 2-3 entidades. Las entidades de dominio son directamente las clases que genera `drift` (sin mapper manual duplicado). |
-| Navegación | `Navigator.push` simple | 5 pantallas no justifican `go_router`; se añadirá si la app crece a un punto donde deep-linking o rutas nombradas aporten valor real. |
+| Capas | `domain` / `data` / `presentation`, pragmático | `domain` define contratos (interfaces de repositorio), `data` los implementa con drift, `presentation` consume vía providers. Sin un caso de uso por cada acción — sería sobre-ingeniería para pocas entidades. Las entidades de dominio son directamente las clases que genera `drift` (sin mapper manual duplicado). |
+| Navegación | `Navigator.push` simple | Las pantallas actuales no justifican `go_router`; se añadirá si la app crece a un punto donde deep-linking o rutas nombradas aporten valor real. |
+| Categorías de plato | Enum fijo (`Entrante/Principal/Postre/Otro`) + tabla `categorias` por restaurante | Se retiró `TipoPlato.cafe` del enum: en la práctica un restaurante puede necesitar secciones propias ("Bebidas", "Tapas") que no encajan en un enum cerrado. Se añadió `categorias` como tabla de categorías personalizadas por restaurante, mientras `platos.tipo` sigue siendo texto libre para no romper datos importados. |
+| Tema | Claro/oscuro siguiendo el sistema, con toggle manual persistido | Añadido después del MVP inicial; el toggle manual se guarda para no depender solo de la preferencia del SO. |
 
 ### Esquema de base de datos
 
@@ -41,126 +49,129 @@ varias decisiones técnicas de la fase 1, explicadas abajo.
 restaurantes      id (PK), nombre, ubicacion, visitas, notas, createdAt, updatedAt
 tags              id (PK), nombre (único)
 restaurante_tags  restauranteId + tagId (join, PK compuesta)
-platos            id (PK), restauranteId (FK), tipo, nombre, puntuacion, createdAt
+categorias        id (PK), restauranteId (FK), nombre, orden
+platos            id (PK), restauranteId (FK), tipo, nombre, puntuacion, comentario, createdAt
 recordatorios     id (PK), restauranteId (FK), texto, hecho
 ```
 
-`tipo` de plato es texto libre en la base de datos (no hay un `CHECK`
-cerrado): en Dart existe un `enum TipoPlato` con los valores habituales
-(Entrante/Principal/Postre/Café/Otro) para el desplegable del formulario,
-pero un valor no reconocido nunca rompe una fila.
+`tipo` de plato sigue siendo texto libre en la base de datos (no hay un
+`CHECK` cerrado): en Dart existe un `enum TipoPlato` (Entrante/Principal/
+Postre/Otro) para el desplegable del formulario, con fallback a `Otro`
+para cualquier valor no reconocido — así un valor importado nunca rompe
+una fila. `categorias` es la capa nueva encima de eso: permite que un
+restaurante tenga secciones propias más allá de las fijas.
 
-`recordatorios` es la única mejora real sobre lo que hacía Obsidian: ahí
-"Próxima vez pedir" era una lista de texto suelta; aquí es una tabla propia
-que se puede marcar como "ya lo pedí" en vez de borrar a mano.
+`recordatorios` ahora también se puede borrar directamente (antes solo se
+marcaban como hechos), y `platos.comentario` permite anotar texto libre
+por plato (ya existía en el informe anterior).
 
-## 3. Qué se hizo en esta sesión
+## 3. Qué se hizo en esta sesión (histórico completo hasta el commit d260f3c)
 
-El proyecto ya existía como un prototipo de aprendizaje
-(`flutter create` + `sqflite` con SQL crudo, modelos mínimos sin tags ni
-visitas, datos de ejemplo hardcodeados). Se reescribió por completo según
-la arquitectura de la sección anterior.
+El proyecto ya existía como un prototipo de aprendizaje (`flutter create` +
+`sqflite` con SQL crudo). Se reescribió por completo con la arquitectura de
+la sección anterior, y a partir de ahí se hizo el primer commit y se siguió
+iterando. Resumen por bloques:
 
-**Eliminado:**
-- `lib/db/base_datos.dart` (acceso SQL crudo con sqflite)
-- `lib/models/restaurante.dart`, `lib/models/plato.dart` (modelos mínimos)
-- `test/widget_test.dart` (test del contador de la plantilla de `flutter create`)
+**Reescritura inicial y primer commit** (`33fd1e3`…`340b17c`): capas
+domain/data/presentation, drift, providers de Riverpod, 5 pantallas,
+importador del vault de Obsidian, tests unitarios y de widget.
 
-**Creado:**
-- `lib/data/local/` — tablas de `drift` (`restaurantes`, `tags`,
-  `restaurante_tags`, `platos`, `recordatorios`), `app_database.dart` y su
-  código generado, `seed_loader.dart` (carga el JSON de Obsidian en el
-  primer arranque si la base está vacía).
-- `lib/data/repositories/` — implementación de los repositorios sobre `drift`.
-- `lib/domain/` — interfaces de repositorio, `enum TipoPlato`, modelos de
-  vista (`RestauranteResumen`, `Estadisticas`).
-- `lib/presentation/` — providers de Riverpod, 5 pantallas
-  (`home_screen`, `restaurante_detail_screen`, `restaurante_form_screen`,
-  `plato_form_screen`, `estadisticas_screen`) y widgets reutilizables
-  (`restaurante_card`, `plato_tile`, `rating_badge`).
-- `tool/import_obsidian.dart` — script (`dart run tool/import_obsidian.dart`)
-  que lee tus 9 notas reales de `D:\OBSIDIAN\Personal\Comida\Restaurantes`
-  y genera `assets/seed_restaurantes.json`, que la app importa sola en el
-  primer arranque.
-- `test/data/restaurante_repository_test.dart` y
-  `test/widget/home_screen_test.dart` — tests unitarios y de widget.
+**Documentación y CI** (`f5a35ab`, `7f4b219`, `8d12f05`): README con
+arquitectura y setup, workflow de GitHub Actions para `flutter analyze` +
+`flutter test`.
 
-**Dependencias:** se quitó `sqflite`; se añadieron `drift`,
-`sqlite3_flutter_libs`, `path`, `flutter_riverpod`, `uuid` (dependencias) y
-`drift_dev`, `build_runner` (dev, para generar el código de `drift`).
+**Funcionalidades nuevas:**
+- `9ff2d0a` — exportar/importar JSON completo (el pendiente que quedaba
+  del MVP original, ya resuelto).
+- `012d4a1`, `f92eeb1` — tema oscuro siguiendo el sistema, luego toggle
+  manual claro/oscuro con persistencia.
+- `6b2c871` — se dejó de auto-sembrar la base de datos en el primer
+  arranque (sustituido más adelante por el diálogo de bienvenida).
+- `22b1143`, `ed4fc0f` — categorías de plato personalizables por
+  restaurante (tabla `categorias`), retirando `TipoPlato.cafe` del enum.
+- `096c2dd` — edición rápida de notas del restaurante in-place.
+- `97f0e49` — se impide crear restaurantes con nombre duplicado; borrar un
+  plato se fusionó en su menú de edición.
+- `bc7b57e`, `05bc8a6`, `bfaf5ea` — diálogo de bienvenida en el primer
+  arranque con datos de ejemplo opcionales (evita duplicar restaurantes de
+  muestra; corrige un deadlock basado en streams).
+- `261e7f0`, `b2d99cc`, `2ab42d6` — splash screen propio con el nombre de
+  la app bajo el logo, legible también en modo oscuro.
+- `9d6b547` — rebrand visual "Cuaderno": paleta parchment/terracota/sepia.
+- `074c074`, `6182201` — contraste del tema mejorado, color de puntuación
+  (`rating`) de marca en vez de `Colors.amber` fijo.
+- `d4f6582` — se omite el campo "especifica el tipo" al añadir un plato
+  directamente en "Otros".
 
-### Funcionalidades del MVP
+**Pulido y correcciones menores** (`c03690a`, `07edcbf`, `7264e21`,
+`811817b`, `9bb418a`): espaciado en las tarjetas de inicio, truncado de
+nombres de plato largos, nombre completo del restaurante visible en el
+detalle, uso consistente de "Food Log" (con espacio), limpieza de widgets
+sin uso (`PlatoTile`, `RatingBadge`), silenciado de un error ruidoso de
+caché incremental de Kotlin en Windows.
+
+**Legal y release** (`7da7642`, `95a6752`, `d260f3c`): licencia "todos los
+derechos reservados", enlace al último release con APK descargable desde
+el README, capturas de pantalla añadidas al README.
+
+### Funcionalidades actuales
 
 1. ✅ Listado de restaurantes con buscador (nombre/ubicación/tags).
-2. ✅ Detalle: datos básicos, platos, notas, recordatorios marcables,
-   botón para registrar una visita.
-3. ✅ Alta/edición de restaurante (con tags como chips editables).
-4. ✅ Alta/edición de plato (tipo, nombre, puntuación).
+2. ✅ Detalle: datos básicos, platos por categoría (fijas + personalizadas),
+   notas editables in-place, recordatorios marcables y borrables, botón
+   para registrar una visita.
+3. ✅ Alta/edición de restaurante (con tags como chips editables,
+   protección contra nombres duplicados).
+4. ✅ Alta/edición de plato (tipo/categoría, nombre, puntuación, comentario).
 5. ✅ Estadísticas globales: media general, más visitados, mejor
    valorados, platos más repetidos, restaurantes por ubicación, tags más
-   usados — replica el dashboard "Restaurantes General" que ya tenías en
-   Obsidian.
-6. ⏳ **Pendiente:** exportar/importar JSON manual (sustituto de
-   "compartir con un conocido" mientras no haya backend). Estaba en el
-   plan original pero no se llegó a construir en esta sesión — ver sección
-   de mejoras futuras.
+   usados.
+6. ✅ Exportar/importar todos los datos a JSON.
+7. ✅ Tema claro/oscuro, siguiendo el sistema o con toggle manual persistido.
+8. ✅ Diálogo de bienvenida en el primer arranque, con opción de cargar
+   datos de ejemplo.
 
-## 4. Bugs encontrados y corregidos durante la verificación
+## 4. Bugs encontrados y corregidos
 
-Dos bugs reales aparecieron al verificar el proyecto, ambos ya arreglados
-y confirmados por ti en tu dispositivo:
+Además de los dos ya documentados en la primera versión de este informe
+(timer pendiente en el test de widget; `sqlite3_flutter_libs` en versión
+stub que rompía toda operación de base de datos), durante esta fase se
+corrigieron:
 
-1. **Timer pendiente en el test de widget.** `drift` programa un timer
-   interno para cerrar el caché de una query reactiva justo al cancelarse
-   el último listener. El test cerraba la base de datos con
-   `addTearDown(db.close)`, que corre demasiado tarde — `flutter_test`
-   verifica que no queden timers pendientes antes de ejecutar esos
-   callbacks. Se cambió a `await db.close()` explícito al final del test.
-
-2. **La app se quedaba cargando y luego lanzaba "Invalid argument(s)".**
-   `pubspec.yaml` había fijado `sqlite3_flutter_libs: ^0.6.0+eol` — una
-   versión que, según su propio README, "ya no hace nada" (es un stub de
-   transición hacia `sqlite3` v3). Como `drift` sigue sobre `sqlite3` v2.x,
-   la app no tenía librería nativa de SQLite disponible en tiempo de
-   ejecución: por eso fallaba tanto la carga inicial como el alta de un
-   restaurante nuevo (cualquier operación sobre la base de datos fallaba
-   igual). Se fijó `sqlite3_flutter_libs: ^0.5.26` (resolvió a `0.5.42`,
-   versión real con los `CMakeLists.txt` de bundling nativo). Tras el
-   cambio hubo que regenerar el código de `drift` con
-   `dart run build_runner build --force-jit`, porque el modo AOT por
-   defecto de `build_runner` choca con los build hooks nativos que trae
-   `sqlite3`.
+- Un deadlock basado en streams al cargar datos de ejemplo desde el
+  diálogo de bienvenida, y restaurantes de muestra duplicados si se
+  invocaba más de una vez (`05bc8a6`).
+- El splash screen no era legible en modo oscuro (`2ab42d6`).
+- El campo "especifica el tipo" aparecía también al añadir un plato ya
+  dentro de la categoría "Otros", siendo redundante (`d4f6582`).
+- Un error ruidoso (no bloqueante) de caché incremental de Kotlin en
+  compilaciones desde Windows (`811817b`).
 
 ## 5. Estado actual
 
-- `flutter analyze`: sin warnings ni errores.
-- `flutter test`: 5/5 en verde.
-- Importador probado contra el vault real: `assets/seed_restaurantes.json`
-  contiene los 9 restaurantes con sus platos.
-- App confirmada funcionando en dispositivo real: carga los restaurantes
-  y permite crear uno nuevo.
-- **Nada está commiteado todavía** — los cambios siguen en el working
-  tree, a la espera de que decidas cuándo hacer el commit.
+- Repo con 36 commits, working tree limpio — todo está commiteado.
+- `flutter analyze` y `flutter test` corren en CI (GitHub Actions) en cada
+  push.
+- Licencia "todos los derechos reservados" añadida.
+- Hay un release publicado con APK descargable, enlazado desde el README,
+  con capturas de pantalla de la app.
+- Versión actual: `1.0.0+1`.
 
 ## 6. Mejoras futuras
 
 En orden aproximado de cuándo tendría sentido abordarlas:
 
-- **Exportar/Importar JSON manual** (pendiente del MVP original): botón en
-  la app para exportar todos los datos a un JSON y otro para importarlo —
-  sustituto barato de "compartir con un conocido" mientras no haya backend.
 - **Fotos de platos**: `image_picker` + guardar la ruta local del archivo
   junto al plato.
-- **Backend compartido** (Supabase o similar): la fase 2 mencionada en la
-  sección 1 — permite que varias personas vean/editen las mismas reseñas.
-  Los UUID y la separación domain/data ya están pensados para que este
-  cambio no obligue a reescribir la UI.
+- **Backend compartido** (Supabase o similar): permite que varias personas
+  vean/editen las mismas reseñas. Los UUID y la separación domain/data ya
+  están pensados para que este cambio no obligue a reescribir la UI.
 - **Geolocalización / mapa**: mostrar los restaurantes en un mapa, o
   autocompletar la ubicación al dar de alta uno nuevo.
-- **Migrar a `sqlite3` v3**: la versión de `sqlite3_flutter_libs` usada
-  ahora (`0.5.42`) avisa en su propio README que solo se mantiene "hasta
-  principios de 2026" — en algún momento conviene migrar a `sqlite3` v3 y
-  su sistema de native assets (requiere también actualizar `drift` a una
-  versión que lo soporte).
-- **`go_router`**: solo si la app crece más allá de las 5 pantallas
-  actuales y hace falta deep-linking o rutas con nombre.
+- **Migrar a `sqlite3` v3**: la versión de `sqlite3_flutter_libs` en uso
+  avisa en su propio README que solo se mantiene "hasta principios de
+  2026" — en algún momento conviene migrar a `sqlite3` v3 y su sistema de
+  native assets (requiere también actualizar `drift` a una versión que lo
+  soporte).
+- **`go_router`**: solo si la app crece más allá de las pantallas actuales
+  y hace falta deep-linking o rutas con nombre.
