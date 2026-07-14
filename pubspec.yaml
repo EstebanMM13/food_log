@@ -152,3 +152,25 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  # Bundled locally so the app stays fully offline (no network font fetch at
+  # runtime, unlike the `google_fonts` package it replaces). Each family
+  # ships as the single upstream variable-font file (OFL-licensed, sourced
+  # from https://github.com/google/fonts) — none of Newsreader, Work Sans or
+  # Caveat publish static per-weight files upstream. A single asset entry per
+  # family/style is intentional: Flutter reads the font's `wght` axis and
+  # interpolates any requested FontWeight from it, so declaring the same file
+  # again per weight is unnecessary (and unsupported the same way static
+  # font sets are). See assets/fonts/OFL-*.txt for each family's license.
+  fonts:
+    - family: Newsreader
+      fonts:
+        - asset: assets/fonts/Newsreader-VariableFont_opsz-wght.ttf
+        - asset: assets/fonts/Newsreader-Italic-VariableFont_opsz-wght.ttf
+          style: italic
+    - family: Work Sans
+      fonts:
+        - asset: assets/fonts/WorkSans-VariableFont_wght.ttf
+    - family: Caveat
+      fonts:
+        - asset: assets/fonts/Caveat-VariableFont_wght.ttf

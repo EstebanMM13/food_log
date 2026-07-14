@@ -12,34 +12,33 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
 
   @override
   Stream<List<Restaurante>> watchAll() {
-    return (_db.select(_db.restaurantes)
-          ..orderBy([(t) => OrderingTerm(expression: t.nombre)]))
-        .watch();
+    return (_db.select(
+      _db.restaurantes,
+    )..orderBy([(t) => OrderingTerm(expression: t.nombre)])).watch();
   }
 
   @override
   Future<List<Restaurante>> getAll() {
-    return (_db.select(_db.restaurantes)
-          ..orderBy([(t) => OrderingTerm(expression: t.nombre)]))
-        .get();
+    return (_db.select(
+      _db.restaurantes,
+    )..orderBy([(t) => OrderingTerm(expression: t.nombre)])).get();
   }
 
   @override
   Future<Restaurante?> getById(String id) {
-    return (_db.select(_db.restaurantes)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    return (_db.select(
+      _db.restaurantes,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
   @override
   Stream<List<Tag>> watchTagsFor(String restauranteId) {
     final query = _db.select(_db.restauranteTags).join([
       innerJoin(_db.tags, _db.tags.id.equalsExp(_db.restauranteTags.tagId)),
-    ])
-      ..where(_db.restauranteTags.restauranteId.equals(restauranteId));
+    ])..where(_db.restauranteTags.restauranteId.equals(restauranteId));
     return query.watch().map(
-          (rows) => rows.map((row) => row.readTable(_db.tags)).toList(),
-        );
+      (rows) => rows.map((row) => row.readTable(_db.tags)).toList(),
+    );
   }
 
   @override
@@ -69,7 +68,9 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
   }) async {
     final id = newId();
     final now = DateTime.now();
-    await _db.into(_db.restaurantes).insert(
+    await _db
+        .into(_db.restaurantes)
+        .insert(
           RestaurantesCompanion.insert(
             id: id,
             nombre: nombre,
@@ -115,20 +116,22 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
   @override
   Future<void> delete(String id) async {
     final restaurante = await getById(id);
-    final platosDelRestaurante = await (_db.select(_db.platos)
-          ..where((t) => t.restauranteId.equals(id)))
-        .get();
+    final platosDelRestaurante = await (_db.select(
+      _db.platos,
+    )..where((t) => t.restauranteId.equals(id))).get();
 
-    await (_db.delete(_db.recordatorios)
-          ..where((t) => t.restauranteId.equals(id)))
-        .go();
-    await (_db.delete(_db.platos)..where((t) => t.restauranteId.equals(id)))
-        .go();
-    await (_db.delete(_db.restauranteTags)
-          ..where((t) => t.restauranteId.equals(id)))
-        .go();
-    await (_db.delete(_db.categorias)..where((t) => t.restauranteId.equals(id)))
-        .go();
+    await (_db.delete(
+      _db.recordatorios,
+    )..where((t) => t.restauranteId.equals(id))).go();
+    await (_db.delete(
+      _db.platos,
+    )..where((t) => t.restauranteId.equals(id))).go();
+    await (_db.delete(
+      _db.restauranteTags,
+    )..where((t) => t.restauranteId.equals(id))).go();
+    await (_db.delete(
+      _db.categorias,
+    )..where((t) => t.restauranteId.equals(id))).go();
     await (_db.delete(_db.restaurantes)..where((t) => t.id.equals(id))).go();
 
     for (final plato in platosDelRestaurante) {
@@ -159,29 +162,34 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
   /// Ensures every tag name exists in `tags` (creating missing ones), then
   /// replaces the restaurant's tag links with exactly this set.
   Future<void> _replaceTags(String restauranteId, List<String> tagNames) async {
-    final normalized = tagNames.map((t) => t.trim()).where((t) => t.isNotEmpty).toSet();
+    final normalized = tagNames
+        .map((t) => t.trim())
+        .where((t) => t.isNotEmpty)
+        .toSet();
 
     final tagIds = <String>[];
     for (final name in normalized) {
-      final existing = await (_db.select(_db.tags)
-            ..where((t) => t.nombre.equals(name)))
-          .getSingleOrNull();
+      final existing = await (_db.select(
+        _db.tags,
+      )..where((t) => t.nombre.equals(name))).getSingleOrNull();
       if (existing != null) {
         tagIds.add(existing.id);
       } else {
         final id = newId();
-        await _db.into(_db.tags).insert(
-              TagsCompanion.insert(id: id, nombre: name),
-            );
+        await _db
+            .into(_db.tags)
+            .insert(TagsCompanion.insert(id: id, nombre: name));
         tagIds.add(id);
       }
     }
 
-    await (_db.delete(_db.restauranteTags)
-          ..where((t) => t.restauranteId.equals(restauranteId)))
-        .go();
+    await (_db.delete(
+      _db.restauranteTags,
+    )..where((t) => t.restauranteId.equals(restauranteId))).go();
     for (final tagId in tagIds) {
-      await _db.into(_db.restauranteTags).insert(
+      await _db
+          .into(_db.restauranteTags)
+          .insert(
             RestauranteTagsCompanion.insert(
               restauranteId: restauranteId,
               tagId: tagId,

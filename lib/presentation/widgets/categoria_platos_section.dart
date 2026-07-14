@@ -4,13 +4,13 @@ import '../../core/theme/app_theme.dart';
 import '../../data/local/app_database.dart';
 import '../../domain/tipo_plato.dart';
 import '../screens/plato_form_screen.dart';
-import 'foto_thumbnail.dart';
+import 'plato_detail_modal.dart';
 
-/// Collapsible category section shown in the restaurant detail screen
+/// Collapsible category card shown in the restaurant detail screen
 /// (e.g. "Entrantes", "Platos", "Postres"). Collapsed, it shows the
 /// category's average score; expanded, it lists every dish with quick
-/// actions to view its comment, edit it or delete it, plus an "Añadir"
-/// button to log a new dish preselected to this category.
+/// actions to open its read-only detail, edit it or delete it, plus an
+/// "Añadir" row to log a new dish preselected to this category.
 class CategoriaPlatosSection extends StatefulWidget {
   final String label;
   final List<Plato> platos;
@@ -38,9 +38,9 @@ class CategoriaPlatosSection extends StatefulWidget {
     required this.onEliminar,
     this.onEliminarCategoria,
   }) : assert(
-          (tipoParaAnadir == null) != (tipoLibreParaAnadir == null),
-          'Exactly one of tipoParaAnadir or tipoLibreParaAnadir must be provided.',
-        );
+         (tipoParaAnadir == null) != (tipoLibreParaAnadir == null),
+         'Exactly one of tipoParaAnadir or tipoLibreParaAnadir must be provided.',
+       );
 
   @override
   State<CategoriaPlatosSection> createState() => _CategoriaPlatosSectionState();
@@ -51,7 +51,8 @@ class _CategoriaPlatosSectionState extends State<CategoriaPlatosSection> {
 
   double? get _media {
     if (widget.platos.isEmpty) return null;
-    return widget.platos.map((p) => p.puntuacion).reduce((a, b) => a + b) / widget.platos.length;
+    return widget.platos.map((p) => p.puntuacion).reduce((a, b) => a + b) /
+        widget.platos.length;
   }
 
   Future<void> _confirmarEliminarCategoria(BuildContext context) async {
@@ -81,13 +82,19 @@ class _CategoriaPlatosSectionState extends State<CategoriaPlatosSection> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = Theme.of(context).extension<BrandAccentColors>()!;
     final media = _media;
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: accent.paperCard,
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
+            borderRadius: BorderRadius.circular(14),
             onTap: () => setState(() => _expandido = !_expandido),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -96,19 +103,40 @@ class _CategoriaPlatosSectionState extends State<CategoriaPlatosSection> {
                   Expanded(
                     child: Text(
                       widget.label,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontFamily: 'Work Sans',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: accent.strongText,
+                      ),
                     ),
                   ),
-                  Icon(
-                    Icons.star,
-                    size: 18,
-                    color: Theme.of(context).extension<BrandAccentColors>()?.rating,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accent.amberTint,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.star, size: 14, color: accent.rating),
+                        const SizedBox(width: 4),
+                        Text(
+                          media == null ? '—' : media.toStringAsFixed(1),
+                          style: TextStyle(
+                            fontFamily: 'Newsreader',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                            color: accent.strongText,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 4),
-                  Text(media == null ? '—' : '${media.toStringAsFixed(1)}/10'),
                   if (widget.onEliminarCategoria != null)
                     IconButton(
                       icon: const Icon(Icons.delete_outline, size: 20),
@@ -116,28 +144,32 @@ class _CategoriaPlatosSectionState extends State<CategoriaPlatosSection> {
                       visualDensity: VisualDensity.compact,
                       onPressed: () => _confirmarEliminarCategoria(context),
                     ),
-                  Icon(_expandido ? Icons.expand_less : Icons.expand_more),
+                  const SizedBox(width: 4),
+                  AnimatedRotation(
+                    turns: _expandido ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 180),
+                    child: Icon(Icons.expand_more, color: accent.inkSoft),
+                  ),
                 ],
               ),
             ),
           ),
           if (_expandido) ...[
-            const Divider(height: 1),
-            for (final plato in widget.platos) _PlatoRow(plato: plato, section: this),
+            Divider(height: 1, color: accent.ruleLine),
+            for (final plato in widget.platos)
+              _PlatoRow(plato: plato, section: this),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+              child: _FilaAnadirPlato(
+                accent: accent,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
                     builder: (_) => PlatoFormScreen(
                       restauranteId: widget.restauranteId,
                       tipoInicial: widget.tipoParaAnadir,
                       tipoLibreInicial: widget.tipoLibreParaAnadir,
                     ),
-                  )),
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Añadir'),
+                  ),
                 ),
               ),
             ),
@@ -148,31 +180,95 @@ class _CategoriaPlatosSectionState extends State<CategoriaPlatosSection> {
   }
 }
 
+class _FilaAnadirPlato extends StatelessWidget {
+  final BrandAccentColors accent;
+  final VoidCallback onTap;
+
+  const _FilaAnadirPlato({required this.accent, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: CustomPaint(
+        painter: _BordeDiscontinuoPainter(color: accent.border),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add, size: 18, color: accent.accentInk),
+              const SizedBox(width: 6),
+              Text(
+                'Añadir plato',
+                style: TextStyle(
+                  fontFamily: 'Work Sans',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13.5,
+                  color: accent.accentInk,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Dashed rounded-rect border for the "Añadir plato" row — Flutter has no
+/// built-in dashed `BoxBorder`, and pulling in a package for one outline
+/// felt heavier than a ~15-line painter.
+class _BordeDiscontinuoPainter extends CustomPainter {
+  final Color color;
+
+  const _BordeDiscontinuoPainter({required this.color});
+
+  static const double _dashWidth = 5;
+  static const double _dashGap = 4;
+  static const double _radius = 10;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(_radius),
+    );
+    final path = Path()..addRRect(rrect);
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final siguiente = distance + _dashWidth;
+        canvas.drawPath(
+          metric.extractPath(distance, siguiente.clamp(0, metric.length)),
+          paint,
+        );
+        distance = siguiente + _dashGap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BordeDiscontinuoPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
 class _PlatoRow extends StatelessWidget {
   final Plato plato;
   final _CategoriaPlatosSectionState section;
 
   const _PlatoRow({required this.plato, required this.section});
 
-  bool get _tieneComentario => plato.comentario != null && plato.comentario!.isNotEmpty;
+  bool get _tieneComentario =>
+      plato.comentario != null && plato.comentario!.isNotEmpty;
 
   bool get _tieneFoto => plato.fotoPath != null && plato.fotoPath!.isNotEmpty;
-
-  void _verComentario(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(plato.nombre),
-        content: Text(plato.comentario!),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
-          ),
-        ],
-      ),
-    );
-  }
 
   Future<void> _confirmarEliminar(BuildContext context) async {
     final confirmado = await showDialog<bool>(
@@ -196,89 +292,99 @@ class _PlatoRow extends StatelessWidget {
     }
   }
 
-  void _verDetallePlato(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(plato.nombre),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+  @override
+  Widget build(BuildContext context) {
+    final accent = Theme.of(context).extension<BrandAccentColors>()!;
+    return InkWell(
+      onTap: () => mostrarDetallePlato(
+        context,
+        plato: plato,
+        categoria: section.widget.label,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
           children: [
-            FotoThumbnail(
-              fotoPath: plato.fotoPath,
-              size: 220,
-              borderRadius: const BorderRadius.all(Radius.circular(16)),
+            // Placeholder icon only — the real photo (if any) is reserved
+            // for the detail modal, per the redesign spec.
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: _tieneFoto ? accent.terracottaTint : accent.paperCardAlt,
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Icon(
+                _tieneFoto ? Icons.restaurant : Icons.restaurant_outlined,
+                size: 14,
+                color: _tieneFoto ? accent.accentInk : accent.inkSoft,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                plato.nombre,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: 'Work Sans',
+                  fontSize: 14,
+                  color: accent.strongText,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(Icons.star, size: 14, color: accent.rating),
+            const SizedBox(width: 3),
+            Text(
+              plato.puntuacion.toStringAsFixed(1),
+              style: TextStyle(
+                fontFamily: 'Work Sans',
+                fontSize: 13,
+                color: accent.inkSoft,
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                _tieneComentario
+                    ? Icons.chat_bubble
+                    : Icons.chat_bubble_outline,
+                size: 17,
+                color: _tieneComentario ? accent.accentInk : accent.inkSoft,
+              ),
+              tooltip: _tieneComentario ? 'Ver comentario' : 'Sin comentario',
+              visualDensity: VisualDensity.compact,
+              onPressed: () => mostrarDetallePlato(
+                context,
+                plato: plato,
+                categoria: section.widget.label,
+              ),
+            ),
+            PopupMenuButton<String>(
+              icon: Icon(Icons.edit, size: 18, color: accent.accentInk),
+              tooltip: 'Opciones',
+              padding: EdgeInsets.zero,
+              onSelected: (value) {
+                if (value == 'editar') {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PlatoFormScreen(
+                        restauranteId: section.widget.restauranteId,
+                        plato: plato,
+                      ),
+                    ),
+                  );
+                } else if (value == 'eliminar') {
+                  _confirmarEliminar(context);
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 'editar', child: Text('Editar')),
+                PopupMenuItem(value: 'eliminar', child: Text('Eliminar')),
+              ],
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () => _verDetallePlato(context),
-      title: Row(
-        children: [
-          Flexible(
-            child: Text(plato.nombre, maxLines: 1, overflow: TextOverflow.ellipsis),
-          ),
-          if (_tieneFoto) ...[
-            const SizedBox(width: 6),
-            Icon(
-              Icons.image_outlined,
-              size: 15,
-              color: Theme.of(context).extension<BrandAccentColors>()?.secondary,
-            ),
-          ],
-        ],
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.star,
-            size: 16,
-            color: Theme.of(context).extension<BrandAccentColors>()?.rating,
-          ),
-          const SizedBox(width: 4),
-          Text('${plato.puntuacion.toStringAsFixed(1)}/10'),
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline),
-            tooltip: _tieneComentario ? 'Ver comentario' : 'Sin comentario',
-            onPressed: _tieneComentario ? () => _verComentario(context) : null,
-          ),
-          PopupMenuButton<String>(
-            icon: Icon(
-              Icons.edit,
-              color: Theme.of(context).extension<BrandAccentColors>()?.accent,
-            ),
-            tooltip: 'Opciones',
-            onSelected: (value) {
-              if (value == 'editar') {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => PlatoFormScreen(
-                    restauranteId: section.widget.restauranteId,
-                    plato: plato,
-                  ),
-                ));
-              } else if (value == 'eliminar') {
-                _confirmarEliminar(context);
-              }
-            },
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'editar', child: Text('Editar')),
-              PopupMenuItem(value: 'eliminar', child: Text('Eliminar')),
-            ],
-          ),
-        ],
       ),
     );
   }

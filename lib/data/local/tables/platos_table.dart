@@ -9,8 +9,7 @@ import 'restaurantes_table.dart';
 /// stored value to make a row unreadable.
 class Platos extends Table {
   TextColumn get id => text()();
-  TextColumn get restauranteId =>
-      text().references(Restaurantes, #id)();
+  TextColumn get restauranteId => text().references(Restaurantes, #id)();
   TextColumn get tipo => text()();
   TextColumn get nombre => text()();
   RealColumn get puntuacion => real()();

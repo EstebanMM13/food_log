@@ -33,7 +33,9 @@ class PlatoRepositoryImpl implements PlatoRepository {
     String? fotoPath,
   }) async {
     final id = newId();
-    await _db.into(_db.platos).insert(
+    await _db
+        .into(_db.platos)
+        .insert(
           PlatosCompanion.insert(
             id: id,
             restauranteId: restauranteId,
@@ -50,8 +52,9 @@ class PlatoRepositoryImpl implements PlatoRepository {
 
   @override
   Future<void> update(Plato plato) async {
-    final anterior =
-        await (_db.select(_db.platos)..where((t) => t.id.equals(plato.id))).getSingleOrNull();
+    final anterior = await (_db.select(
+      _db.platos,
+    )..where((t) => t.id.equals(plato.id))).getSingleOrNull();
     await _db.update(_db.platos).replace(plato);
     if (anterior != null && anterior.fotoPath != plato.fotoPath) {
       await PhotoStorage.borrarSiExiste(anterior.fotoPath);
@@ -60,8 +63,9 @@ class PlatoRepositoryImpl implements PlatoRepository {
 
   @override
   Future<void> delete(String id) async {
-    final plato =
-        await (_db.select(_db.platos)..where((t) => t.id.equals(id))).getSingleOrNull();
+    final plato = await (_db.select(
+      _db.platos,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     await (_db.delete(_db.platos)..where((t) => t.id.equals(id))).go();
     if (plato != null) {
       await PhotoStorage.borrarSiExiste(plato.fotoPath);

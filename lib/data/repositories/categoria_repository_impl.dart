@@ -26,9 +26,9 @@ class CategoriaRepositoryImpl implements CategoriaRepository {
     final nombreNormalizado = nombre.trim().toLowerCase();
 
     return _db.transaction(() async {
-      final existentes = await (_db.select(_db.categorias)
-            ..where((t) => t.restauranteId.equals(restauranteId)))
-          .get();
+      final existentes = await (_db.select(
+        _db.categorias,
+      )..where((t) => t.restauranteId.equals(restauranteId))).get();
 
       final duplicada = existentes.any(
         (c) => c.nombre.trim().toLowerCase() == nombreNormalizado,
@@ -37,7 +37,9 @@ class CategoriaRepositoryImpl implements CategoriaRepository {
         throw CategoriaDuplicadaException(nombre.trim());
       }
 
-      await _db.into(_db.categorias).insert(
+      await _db
+          .into(_db.categorias)
+          .insert(
             CategoriasCompanion.insert(
               id: id,
               restauranteId: restauranteId,

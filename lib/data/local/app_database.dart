@@ -15,7 +15,14 @@ import 'tables/tags_table.dart';
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Restaurantes, Tags, RestauranteTags, Platos, Recordatorios, Categorias],
+  tables: [
+    Restaurantes,
+    Tags,
+    RestauranteTags,
+    Platos,
+    Recordatorios,
+    Categorias,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -28,20 +35,20 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) => m.createAll(),
-        onUpgrade: (m, from, to) async {
-          if (from < 2) {
-            await m.addColumn(platos, platos.comentario);
-          }
-          if (from < 3) {
-            await m.createTable(categorias);
-          }
-          if (from < 4) {
-            await m.addColumn(restaurantes, restaurantes.fotoPath);
-            await m.addColumn(platos, platos.fotoPath);
-          }
-        },
-      );
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(platos, platos.comentario);
+      }
+      if (from < 3) {
+        await m.createTable(categorias);
+      }
+      if (from < 4) {
+        await m.addColumn(restaurantes, restaurantes.fotoPath);
+        await m.addColumn(platos, platos.fotoPath);
+      }
+    },
+  );
 }
 
 LazyDatabase _openConnection() {

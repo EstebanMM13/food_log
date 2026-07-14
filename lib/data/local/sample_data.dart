@@ -15,7 +15,9 @@ Future<void> cargarRestaurantesDeMuestra({
   required PlatoRepository platos,
 }) async {
   final existentes = await restaurantes.getAll();
-  final nombresExistentes = existentes.map((r) => r.nombre.trim().toLowerCase()).toSet();
+  final nombresExistentes = existentes
+      .map((r) => r.nombre.trim().toLowerCase())
+      .toSet();
 
   for (final r in _restaurantesDeMuestra) {
     if (nombresExistentes.contains(r.nombre.trim().toLowerCase())) continue;
@@ -60,7 +62,12 @@ class _PlatoMuestra {
   final double puntuacion;
   final String? comentario;
 
-  const _PlatoMuestra(this.nombre, this.tipo, this.puntuacion, [this.comentario]);
+  const _PlatoMuestra(
+    this.nombre,
+    this.tipo,
+    this.puntuacion, [
+    this.comentario,
+  ]);
 }
 
 const _restaurantesDeMuestra = [
@@ -102,7 +109,12 @@ const _restaurantesDeMuestra = [
     visitas: 3,
     tags: ['Marisco', 'Arrocería'],
     platos: [
-      _PlatoMuestra('Gambas rojas de Denia', 'Entrante', 9.5, 'Caras, pero las valen.'),
+      _PlatoMuestra(
+        'Gambas rojas de Denia',
+        'Entrante',
+        9.5,
+        'Caras, pero las valen.',
+      ),
       _PlatoMuestra('Arroz a banda', 'Principal', 9.0),
       _PlatoMuestra('Nube de limón', 'Postre', 8.2),
     ],
@@ -125,7 +137,12 @@ const _restaurantesDeMuestra = [
     tags: ['Tapas', 'Terraza'],
     platos: [
       _PlatoMuestra('Patatas bravas', 'Entrante', 7.0),
-      _PlatoMuestra('All i pebre de anguila', 'Principal', 8.3, 'Picante justo, muy sabroso.'),
+      _PlatoMuestra(
+        'All i pebre de anguila',
+        'Principal',
+        8.3,
+        'Picante justo, muy sabroso.',
+      ),
       _PlatoMuestra('Café', 'Otro', 6.5),
     ],
   ),

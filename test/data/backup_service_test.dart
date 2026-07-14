@@ -90,38 +90,48 @@ void main() {
     expect((restaurante['categorias'] as List), hasLength(1));
   });
 
-  test('export stores only the photo file name, never the absolute path', () async {
-    final fotoRestaurante = await crearFoto('camelot.jpg');
-    final fotoPlato = await crearFoto('patatas.jpg');
+  test(
+    'export stores only the photo file name, never the absolute path',
+    () async {
+      final fotoRestaurante = await crearFoto('camelot.jpg');
+      final fotoPlato = await crearFoto('patatas.jpg');
 
-    final id = await restaurantes.insert(nombre: 'Camelot', fotoPath: fotoRestaurante);
-    await platos.insert(
-      restauranteId: id,
-      tipo: 'Entrante',
-      nombre: 'Patatas con queso y bacon',
-      puntuacion: 9,
-      fotoPath: fotoPlato,
-    );
+      final id = await restaurantes.insert(
+        nombre: 'Camelot',
+        fotoPath: fotoRestaurante,
+      );
+      await platos.insert(
+        restauranteId: id,
+        tipo: 'Entrante',
+        nombre: 'Patatas con queso y bacon',
+        puntuacion: 9,
+        fotoPath: fotoPlato,
+      );
 
-    final json = await exportDatabaseToJson(
-      restaurantes: restaurantes,
-      platos: platos,
-      recordatorios: recordatorios,
-      categorias: categorias,
-    );
+      final json = await exportDatabaseToJson(
+        restaurantes: restaurantes,
+        platos: platos,
+        recordatorios: recordatorios,
+        categorias: categorias,
+      );
 
-    final data = jsonDecode(json) as Map<String, dynamic>;
-    final restaurante = (data['restaurantes'] as List).single as Map<String, dynamic>;
-    // PhotoStorage.guardar() renames the file to a fresh UUID (keeping the
-    // extension) when copying it into app storage, so the exported name is
-    // that UUID-based name, not the original picked file name.
-    expect(restaurante['fotoPath'], p.basename(fotoRestaurante));
-    final plato = (restaurante['platos'] as List).single as Map<String, dynamic>;
-    expect(plato['fotoPath'], p.basename(fotoPlato));
-  });
+      final data = jsonDecode(json) as Map<String, dynamic>;
+      final restaurante =
+          (data['restaurantes'] as List).single as Map<String, dynamic>;
+      // PhotoStorage.guardar() renames the file to a fresh UUID (keeping the
+      // extension) when copying it into app storage, so the exported name is
+      // that UUID-based name, not the original picked file name.
+      expect(restaurante['fotoPath'], p.basename(fotoRestaurante));
+      final plato =
+          (restaurante['platos'] as List).single as Map<String, dynamic>;
+      expect(plato['fotoPath'], p.basename(fotoPlato));
+    },
+  );
 
-  test('import inserts new restaurants with fresh ids from a JSON payload', () async {
-    const raw = '''
+  test(
+    'import inserts new restaurants with fresh ids from a JSON payload',
+    () async {
+      const raw = '''
     {
       "version": 1,
       "restaurantes": [
@@ -144,133 +154,155 @@ void main() {
     }
     ''';
 
-    final resumen = await importDatabaseFromJson(
-      raw,
-      db: db,
-      restaurantes: restaurantes,
-      platos: platos,
-      recordatorios: recordatorios,
-      categorias: categorias,
-    );
+      final resumen = await importDatabaseFromJson(
+        raw,
+        db: db,
+        restaurantes: restaurantes,
+        platos: platos,
+        recordatorios: recordatorios,
+        categorias: categorias,
+      );
 
-    expect(resumen.restaurantes, 1);
-    expect(resumen.platos, 1);
-    expect(resumen.recordatorios, 1);
-    expect(resumen.categorias, 1);
+      expect(resumen.restaurantes, 1);
+      expect(resumen.platos, 1);
+      expect(resumen.recordatorios, 1);
+      expect(resumen.categorias, 1);
 
-    final lista = await restaurantes.watchAll().first;
-    expect(lista, hasLength(1));
-    final restaurante = lista.single;
-    expect(restaurante.nombre, 'Pekín');
-    expect(restaurante.visitas, 5);
+      final lista = await restaurantes.watchAll().first;
+      expect(lista, hasLength(1));
+      final restaurante = lista.single;
+      expect(restaurante.nombre, 'Pekín');
+      expect(restaurante.visitas, 5);
 
-    final tags = await restaurantes.watchTagsFor(restaurante.id).first;
-    expect(tags.map((t) => t.nombre).toSet(), {'Chino', 'Pekin'});
+      final tags = await restaurantes.watchTagsFor(restaurante.id).first;
+      expect(tags.map((t) => t.nombre).toSet(), {'Chino', 'Pekin'});
 
-    final platosImportados = await platos.watchByRestaurante(restaurante.id).first;
-    expect(platosImportados, hasLength(1));
-    expect(platosImportados.single.nombre, 'Pollo frito');
+      final platosImportados = await platos
+          .watchByRestaurante(restaurante.id)
+          .first;
+      expect(platosImportados, hasLength(1));
+      expect(platosImportados.single.nombre, 'Pollo frito');
 
-    final recordatoriosImportados =
-        await recordatorios.watchByRestaurante(restaurante.id).first;
-    expect(recordatoriosImportados, hasLength(1));
-    expect(recordatoriosImportados.single.hecho, isTrue);
+      final recordatoriosImportados = await recordatorios
+          .watchByRestaurante(restaurante.id)
+          .first;
+      expect(recordatoriosImportados, hasLength(1));
+      expect(recordatoriosImportados.single.hecho, isTrue);
 
-    final categoriasImportadas = await categorias.watchByRestaurante(restaurante.id).first;
-    expect(categoriasImportadas, hasLength(1));
-    expect(categoriasImportadas.single.nombre, 'Entrantes fríos');
-  });
+      final categoriasImportadas = await categorias
+          .watchByRestaurante(restaurante.id)
+          .first;
+      expect(categoriasImportadas, hasLength(1));
+      expect(categoriasImportadas.single.nombre, 'Entrantes fríos');
+    },
+  );
 
-  test('importing an exported payload roundtrips as a duplicate, not a merge', () async {
-    final id = await restaurantes.insert(nombre: 'Capri', tags: ['Italiano']);
-    await platos.insert(
-      restauranteId: id,
-      tipo: 'Entrante',
-      nombre: 'Bruschetta',
-      puntuacion: 7,
-    );
+  test(
+    'importing an exported payload roundtrips as a duplicate, not a merge',
+    () async {
+      final id = await restaurantes.insert(nombre: 'Capri', tags: ['Italiano']);
+      await platos.insert(
+        restauranteId: id,
+        tipo: 'Entrante',
+        nombre: 'Bruschetta',
+        puntuacion: 7,
+      );
 
-    final json = await exportDatabaseToJson(
-      restaurantes: restaurantes,
-      platos: platos,
-      recordatorios: recordatorios,
-      categorias: categorias,
-    );
+      final json = await exportDatabaseToJson(
+        restaurantes: restaurantes,
+        platos: platos,
+        recordatorios: recordatorios,
+        categorias: categorias,
+      );
 
-    await importDatabaseFromJson(
-      json,
-      db: db,
-      restaurantes: restaurantes,
-      platos: platos,
-      recordatorios: recordatorios,
-      categorias: categorias,
-    );
+      await importDatabaseFromJson(
+        json,
+        db: db,
+        restaurantes: restaurantes,
+        platos: platos,
+        recordatorios: recordatorios,
+        categorias: categorias,
+      );
 
-    final lista = await restaurantes.watchAll().first;
-    expect(lista, hasLength(2));
-    expect(lista.map((r) => r.id).toSet(), hasLength(2));
-    expect(lista.every((r) => r.nombre == 'Capri'), isTrue);
-  });
+      final lista = await restaurantes.watchAll().first;
+      expect(lista, hasLength(2));
+      expect(lista.map((r) => r.id).toSet(), hasLength(2));
+      expect(lista.every((r) => r.nombre == 'Capri'), isTrue);
+    },
+  );
 
-  test('exportarComoZip bundles backup.json plus every referenced photo', () async {
-    final fotoRestaurante = await crearFoto('camelot.jpg');
-    final fotoPlato = await crearFoto('patatas.jpg');
+  test(
+    'exportarComoZip bundles backup.json plus every referenced photo',
+    () async {
+      final fotoRestaurante = await crearFoto('camelot.jpg');
+      final fotoPlato = await crearFoto('patatas.jpg');
 
-    final id = await restaurantes.insert(nombre: 'Camelot', fotoPath: fotoRestaurante);
-    await platos.insert(
-      restauranteId: id,
-      tipo: 'Entrante',
-      nombre: 'Patatas con queso y bacon',
-      puntuacion: 9,
-      fotoPath: fotoPlato,
-    );
+      final id = await restaurantes.insert(
+        nombre: 'Camelot',
+        fotoPath: fotoRestaurante,
+      );
+      await platos.insert(
+        restauranteId: id,
+        tipo: 'Entrante',
+        nombre: 'Patatas con queso y bacon',
+        puntuacion: 9,
+        fotoPath: fotoPlato,
+      );
 
-    final zipBytes = await exportarComoZip(
-      restaurantes: restaurantes,
-      platos: platos,
-      recordatorios: recordatorios,
-      categorias: categorias,
-    );
+      final zipBytes = await exportarComoZip(
+        restaurantes: restaurantes,
+        platos: platos,
+        recordatorios: recordatorios,
+        categorias: categorias,
+      );
 
-    final archive = ZipDecoder().decodeBytes(zipBytes);
-    final backupJson = archive.findFile('backup.json');
-    expect(backupJson, isNotNull);
+      final archive = ZipDecoder().decodeBytes(zipBytes);
+      final backupJson = archive.findFile('backup.json');
+      expect(backupJson, isNotNull);
 
-    final data = jsonDecode(utf8.decode(backupJson!.content)) as Map<String, dynamic>;
-    expect(data['version'], backupFormatVersion);
+      final data =
+          jsonDecode(utf8.decode(backupJson!.content)) as Map<String, dynamic>;
+      expect(data['version'], backupFormatVersion);
 
-    final fotoRestauranteEntrada =
-        archive.findFile('fotos/${p.basename(fotoRestaurante)}');
-    final fotoPlatoEntrada = archive.findFile('fotos/${p.basename(fotoPlato)}');
-    expect(fotoRestauranteEntrada, isNotNull);
-    expect(fotoPlatoEntrada, isNotNull);
-    expect(
-      utf8.decode(fotoRestauranteEntrada!.content),
-      'contenido falso de imagen: camelot.jpg',
-    );
-    expect(
-      utf8.decode(fotoPlatoEntrada!.content),
-      'contenido falso de imagen: patatas.jpg',
-    );
-  });
+      final fotoRestauranteEntrada = archive.findFile(
+        'fotos/${p.basename(fotoRestaurante)}',
+      );
+      final fotoPlatoEntrada = archive.findFile(
+        'fotos/${p.basename(fotoPlato)}',
+      );
+      expect(fotoRestauranteEntrada, isNotNull);
+      expect(fotoPlatoEntrada, isNotNull);
+      expect(
+        utf8.decode(fotoRestauranteEntrada!.content),
+        'contenido falso de imagen: camelot.jpg',
+      );
+      expect(
+        utf8.decode(fotoPlatoEntrada!.content),
+        'contenido falso de imagen: patatas.jpg',
+      );
+    },
+  );
 
-  test('exportarComoZip skips a fotoPath whose file was deleted by hand', () async {
-    final fotoRestaurante = await crearFoto('borrada.jpg');
-    await File(fotoRestaurante).delete();
+  test(
+    'exportarComoZip skips a fotoPath whose file was deleted by hand',
+    () async {
+      final fotoRestaurante = await crearFoto('borrada.jpg');
+      await File(fotoRestaurante).delete();
 
-    await restaurantes.insert(nombre: 'Camelot', fotoPath: fotoRestaurante);
+      await restaurantes.insert(nombre: 'Camelot', fotoPath: fotoRestaurante);
 
-    final zipBytes = await exportarComoZip(
-      restaurantes: restaurantes,
-      platos: platos,
-      recordatorios: recordatorios,
-      categorias: categorias,
-    );
+      final zipBytes = await exportarComoZip(
+        restaurantes: restaurantes,
+        platos: platos,
+        recordatorios: recordatorios,
+        categorias: categorias,
+      );
 
-    final archive = ZipDecoder().decodeBytes(zipBytes);
-    expect(archive.findFile('fotos/${p.basename(fotoRestaurante)}'), isNull);
-    expect(archive.files.where((f) => f.name.startsWith('fotos/')), isEmpty);
-  });
+      final archive = ZipDecoder().decodeBytes(zipBytes);
+      expect(archive.findFile('fotos/${p.basename(fotoRestaurante)}'), isNull);
+      expect(archive.files.where((f) => f.name.startsWith('fotos/')), isEmpty);
+    },
+  );
 
   test(
     'importarDesdeZip copies photos into app storage and points fotoPath at the copies',
@@ -278,7 +310,10 @@ void main() {
       final fotoRestaurante = await crearFoto('camelot.jpg');
       final fotoPlato = await crearFoto('patatas.jpg');
 
-      final id = await restaurantes.insert(nombre: 'Camelot', fotoPath: fotoRestaurante);
+      final id = await restaurantes.insert(
+        nombre: 'Camelot',
+        fotoPath: fotoRestaurante,
+      );
       await platos.insert(
         restauranteId: id,
         tipo: 'Entrante',
@@ -324,7 +359,9 @@ void main() {
         'contenido falso de imagen: camelot.jpg',
       );
 
-      final platosImportados = await platos.watchByRestaurante(importado.id).first;
+      final platosImportados = await platos
+          .watchByRestaurante(importado.id)
+          .first;
       expect(platosImportados, hasLength(1));
       final platoImportado = platosImportados.single;
       expect(platoImportado.fotoPath, isNotNull);
@@ -338,8 +375,10 @@ void main() {
     () async {
       final fotoRestaurante = await crearFoto('camelot.jpg');
 
-      final idOriginal =
-          await restaurantes.insert(nombre: 'Camelot', fotoPath: fotoRestaurante);
+      final idOriginal = await restaurantes.insert(
+        nombre: 'Camelot',
+        fotoPath: fotoRestaurante,
+      );
 
       final zipBytes = await exportarComoZip(
         restaurantes: restaurantes,
@@ -432,7 +471,9 @@ void main() {
   test(
     'importarDesdeZip reports a clear error for a file that is neither zip nor JSON',
     () async {
-      final bytesBasura = utf8.encode('esto no es ni un zip ni un JSON válido {{{');
+      final bytesBasura = utf8.encode(
+        'esto no es ni un zip ni un JSON válido {{{',
+      );
 
       await expectLater(
         importarDesdeZip(
@@ -448,8 +489,10 @@ void main() {
     },
   );
 
-  test('importarDesdeZip still accepts a plain v1 JSON backup, without photos', () async {
-    const rawV1 = '''
+  test(
+    'importarDesdeZip still accepts a plain v1 JSON backup, without photos',
+    () async {
+      const rawV1 = '''
     {
       "version": 1,
       "restaurantes": [
@@ -468,24 +511,27 @@ void main() {
     }
     ''';
 
-    final resumen = await importarDesdeZip(
-      utf8.encode(rawV1),
-      db: db,
-      restaurantes: restaurantes,
-      platos: platos,
-      recordatorios: recordatorios,
-      categorias: categorias,
-    );
+      final resumen = await importarDesdeZip(
+        utf8.encode(rawV1),
+        db: db,
+        restaurantes: restaurantes,
+        platos: platos,
+        recordatorios: recordatorios,
+        categorias: categorias,
+      );
 
-    expect(resumen.restaurantes, 1);
-    expect(resumen.platos, 1);
+      expect(resumen.restaurantes, 1);
+      expect(resumen.platos, 1);
 
-    final lista = await restaurantes.watchAll().first;
-    expect(lista, hasLength(1));
-    expect(lista.single.nombre, 'Pekín');
-    expect(lista.single.fotoPath, isNull);
+      final lista = await restaurantes.watchAll().first;
+      expect(lista, hasLength(1));
+      expect(lista.single.nombre, 'Pekín');
+      expect(lista.single.fotoPath, isNull);
 
-    final platosImportados = await platos.watchByRestaurante(lista.single.id).first;
-    expect(platosImportados.single.fotoPath, isNull);
-  });
+      final platosImportados = await platos
+          .watchByRestaurante(lista.single.id)
+          .first;
+      expect(platosImportados.single.fotoPath, isNull);
+    },
+  );
 }

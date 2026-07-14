@@ -26,14 +26,17 @@ void main() {
     expect(mode, ThemeMode.dark);
   });
 
-  test('toggle from system picks the opposite of the visible brightness', () async {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-    await container.read(themeModeProvider.future);
+  test(
+    'toggle from system picks the opposite of the visible brightness',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      await container.read(themeModeProvider.future);
 
-    await container.read(themeModeProvider.notifier).toggle(Brightness.dark);
-    expect(container.read(themeModeProvider).value, ThemeMode.light);
-  });
+      await container.read(themeModeProvider.notifier).toggle(Brightness.dark);
+      expect(container.read(themeModeProvider).value, ThemeMode.light);
+    },
+  );
 
   test('toggle flips explicit light/dark and persists the change', () async {
     final container = ProviderContainer();

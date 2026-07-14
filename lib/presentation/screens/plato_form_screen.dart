@@ -69,7 +69,8 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
       _tipoSeleccionado == TipoPlato.otro &&
       (widget.tipoLibreInicial != null ||
           (_esEdicion &&
-              widget.plato!.tipo.trim().toLowerCase() != TipoPlato.otro.label.toLowerCase()));
+              widget.plato!.tipo.trim().toLowerCase() !=
+                  TipoPlato.otro.label.toLowerCase()));
 
   @override
   void initState() {
@@ -87,7 +88,9 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
           ? (widget.plato?.tipo ?? widget.tipoLibreInicial ?? '')
           : '',
     );
-    _comentarioController = TextEditingController(text: widget.plato?.comentario ?? '');
+    _comentarioController = TextEditingController(
+      text: widget.plato?.comentario ?? '',
+    );
     _puntuacion = widget.plato?.puntuacion ?? 5;
     _fotoPathOriginal = widget.plato?.fotoPath;
     _fotoPath = _fotoPathOriginal;
@@ -115,20 +118,25 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _guardando = true);
 
-    final tipo = _mostrarCampoLibre ? _tipoLibreController.text.trim() : _tipoSeleccionado.label;
+    final tipo = _mostrarCampoLibre
+        ? _tipoLibreController.text.trim()
+        : _tipoSeleccionado.label;
     final nombre = _nombreController.text.trim();
-    final comentario =
-        _comentarioController.text.trim().isEmpty ? null : _comentarioController.text.trim();
+    final comentario = _comentarioController.text.trim().isEmpty
+        ? null
+        : _comentarioController.text.trim();
     final repo = ref.read(platoRepositoryProvider);
 
     if (_esEdicion) {
-      await repo.update(widget.plato!.copyWith(
-        tipo: tipo,
-        nombre: nombre,
-        puntuacion: _puntuacion,
-        comentario: Value(comentario),
-        fotoPath: Value(_fotoPath),
-      ));
+      await repo.update(
+        widget.plato!.copyWith(
+          tipo: tipo,
+          nombre: nombre,
+          puntuacion: _puntuacion,
+          comentario: Value(comentario),
+          fotoPath: Value(_fotoPath),
+        ),
+      );
     } else {
       await repo.insert(
         restauranteId: widget.restauranteId,
@@ -175,8 +183,12 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _tipoLibreController,
-                decoration: const InputDecoration(labelText: 'Especifica el tipo'),
-                validator: (value) => (_mostrarCampoLibre && (value == null || value.trim().isEmpty))
+                decoration: const InputDecoration(
+                  labelText: 'Especifica el tipo',
+                ),
+                validator: (value) =>
+                    (_mostrarCampoLibre &&
+                        (value == null || value.trim().isEmpty))
                     ? 'Indica el tipo de plato'
                     : null,
               ),
@@ -185,13 +197,16 @@ class _PlatoFormScreenState extends ConsumerState<PlatoFormScreen> {
             TextFormField(
               controller: _nombreController,
               decoration: const InputDecoration(labelText: 'Nombre del plato'),
-              validator: (value) =>
-                  (value == null || value.trim().isEmpty) ? 'El nombre es obligatorio' : null,
+              validator: (value) => (value == null || value.trim().isEmpty)
+                  ? 'El nombre es obligatorio'
+                  : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _comentarioController,
-              decoration: const InputDecoration(labelText: 'Comentario (opcional)'),
+              decoration: const InputDecoration(
+                labelText: 'Comentario (opcional)',
+              ),
               maxLines: 2,
             ),
             const SizedBox(height: 12),

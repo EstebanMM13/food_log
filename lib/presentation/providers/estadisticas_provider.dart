@@ -41,14 +41,18 @@ final estadisticasProvider = Provider<AsyncValue<Estadisticas>>((ref) {
   final masVisitados = [...resumen]
     ..sort((a, b) {
       final cmp = b.restaurante.visitas.compareTo(a.restaurante.visitas);
-      return cmp != 0 ? cmp : a.restaurante.nombre.compareTo(b.restaurante.nombre);
+      return cmp != 0
+          ? cmp
+          : a.restaurante.nombre.compareTo(b.restaurante.nombre);
     });
   final masVisitadosTop = masVisitados
       .take(_topN)
-      .map((r) => RestauranteRanking(
-            restaurante: r.restaurante,
-            valor: r.restaurante.visitas.toDouble(),
-          ))
+      .map(
+        (r) => RestauranteRanking(
+          restaurante: r.restaurante,
+          valor: r.restaurante.visitas.toDouble(),
+        ),
+      )
       .toList();
 
   // Best rated: only restaurants with at least one dish can be ranked —
@@ -56,14 +60,18 @@ final estadisticasProvider = Provider<AsyncValue<Estadisticas>>((ref) {
   final conPuntuacion = resumen.where((r) => r.puntuacionMedia != null).toList()
     ..sort((a, b) {
       final cmp = b.puntuacionMedia!.compareTo(a.puntuacionMedia!);
-      return cmp != 0 ? cmp : a.restaurante.nombre.compareTo(b.restaurante.nombre);
+      return cmp != 0
+          ? cmp
+          : a.restaurante.nombre.compareTo(b.restaurante.nombre);
     });
   final mejorValoradosTop = conPuntuacion
       .take(_topN)
-      .map((r) => RestauranteRanking(
-            restaurante: r.restaurante,
-            valor: r.puntuacionMedia!,
-          ))
+      .map(
+        (r) => RestauranteRanking(
+          restaurante: r.restaurante,
+          valor: r.puntuacionMedia!,
+        ),
+      )
       .toList();
 
   // Most repeated dishes: group by (case/space-insensitive) name.
@@ -74,18 +82,21 @@ final estadisticasProvider = Provider<AsyncValue<Estadisticas>>((ref) {
     porNombre.putIfAbsent(clave, () => []).add(plato.puntuacion);
     nombreOriginal.putIfAbsent(clave, () => plato.nombre.trim());
   }
-  final platosRepetidos = porNombre.entries
-      .where((e) => e.value.length > 1)
-      .map((e) => PlatoRepetido(
-            nombre: nombreOriginal[e.key]!,
-            veces: e.value.length,
-            puntuacionMedia: e.value.reduce((a, b) => a + b) / e.value.length,
-          ))
-      .toList()
-    ..sort((a, b) {
-      final cmp = b.veces.compareTo(a.veces);
-      return cmp != 0 ? cmp : a.nombre.compareTo(b.nombre);
-    });
+  final platosRepetidos =
+      porNombre.entries
+          .where((e) => e.value.length > 1)
+          .map(
+            (e) => PlatoRepetido(
+              nombre: nombreOriginal[e.key]!,
+              veces: e.value.length,
+              puntuacionMedia: e.value.reduce((a, b) => a + b) / e.value.length,
+            ),
+          )
+          .toList()
+        ..sort((a, b) {
+          final cmp = b.veces.compareTo(a.veces);
+          return cmp != 0 ? cmp : a.nombre.compareTo(b.nombre);
+        });
   final platosRepetidosTop = platosRepetidos.take(_topN).toList();
 
   // Grouped by location — restaurants without a location fall under a
@@ -106,21 +117,24 @@ final estadisticasProvider = Provider<AsyncValue<Estadisticas>>((ref) {
       conteoTags.update(tag.nombre, (v) => v + 1, ifAbsent: () => 1);
     }
   }
-  final tagsMasUsados = conteoTags.entries
-      .map((e) => TagConteo(nombre: e.key, cantidad: e.value))
-      .toList()
-    ..sort((a, b) {
-      final cmp = b.cantidad.compareTo(a.cantidad);
-      return cmp != 0 ? cmp : a.nombre.compareTo(b.nombre);
-    });
+  final tagsMasUsados =
+      conteoTags.entries
+          .map((e) => TagConteo(nombre: e.key, cantidad: e.value))
+          .toList()
+        ..sort((a, b) {
+          final cmp = b.cantidad.compareTo(a.cantidad);
+          return cmp != 0 ? cmp : a.nombre.compareTo(b.nombre);
+        });
   final tagsMasUsadosTop = tagsMasUsados.take(_topN).toList();
 
-  return AsyncValue.data(Estadisticas(
-    puntuacionGlobalMedia: puntuacionGlobalMedia,
-    masVisitados: masVisitadosTop,
-    mejorValorados: mejorValoradosTop,
-    platosMasRepetidos: platosRepetidosTop,
-    porUbicacion: porUbicacion,
-    tagsMasUsados: tagsMasUsadosTop,
-  ));
+  return AsyncValue.data(
+    Estadisticas(
+      puntuacionGlobalMedia: puntuacionGlobalMedia,
+      masVisitados: masVisitadosTop,
+      mejorValorados: mejorValoradosTop,
+      platosMasRepetidos: platosRepetidosTop,
+      porUbicacion: porUbicacion,
+      tagsMasUsados: tagsMasUsadosTop,
+    ),
+  );
 });

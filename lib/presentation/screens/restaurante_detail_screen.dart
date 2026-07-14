@@ -10,8 +10,11 @@ import '../providers/plato_providers.dart';
 import '../providers/recordatorio_providers.dart';
 import '../providers/repository_providers.dart';
 import '../providers/restaurantes_provider.dart';
+import '../widgets/caja_notas.dart';
 import '../widgets/categoria_platos_section.dart';
+import '../widgets/foto_rayada.dart';
 import '../widgets/foto_thumbnail.dart';
+import '../widgets/tag_chip.dart';
 import 'restaurante_form_screen.dart';
 
 class RestauranteDetailScreen extends ConsumerWidget {
@@ -21,11 +24,16 @@ class RestauranteDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final accent = Theme.of(context).extension<BrandAccentColors>()!;
     final restaurantesAsync = ref.watch(restaurantesProvider);
     final tagsAsync = ref.watch(tagsPorRestauranteProvider);
     final platosAsync = ref.watch(platosDeRestauranteProvider(restauranteId));
-    final recordatoriosAsync = ref.watch(recordatoriosDeRestauranteProvider(restauranteId));
-    final categoriasAsync = ref.watch(categoriasDeRestauranteProvider(restauranteId));
+    final recordatoriosAsync = ref.watch(
+      recordatoriosDeRestauranteProvider(restauranteId),
+    );
+    final categoriasAsync = ref.watch(
+      categoriasDeRestauranteProvider(restauranteId),
+    );
 
     Restaurante? restaurante;
     for (final r in restaurantesAsync.value ?? const <Restaurante>[]) {
@@ -45,7 +53,8 @@ class RestauranteDetailScreen extends ConsumerWidget {
     final categorias = categoriasAsync.value ?? const [];
     final media = platos.isEmpty
         ? null
-        : platos.map((p) => p.puntuacion).reduce((a, b) => a + b) / platos.length;
+        : platos.map((p) => p.puntuacion).reduce((a, b) => a + b) /
+              platos.length;
 
     // Group dishes by category for the accordion sections. Dishes whose type
     // doesn't match a fixed TipoPlato are matched against user-defined
@@ -95,174 +104,135 @@ class RestauranteDetailScreen extends ConsumerWidget {
             restaurante.nombre,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).extension<BrandAccentColors>()?.strongText,
-            ),
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: Icon(Icons.edit, color: accent.accentInk),
             tooltip: 'Editar restaurante',
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => RestauranteFormScreen(
-                restaurante: restaurante,
-                tagsIniciales: tags.map((t) => t.nombre).toList(),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => RestauranteFormScreen(
+                  restaurante: restaurante,
+                  tagsIniciales: tags.map((t) => t.nombre).toList(),
+                ),
               ),
-            )),
+            ),
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline),
+            icon: Icon(Icons.delete_outline, color: accent.accentInk),
             tooltip: 'Eliminar restaurante',
-            onPressed: () => _confirmarEliminarRestaurante(context, ref, restaurante!.nombre),
+            onPressed: () => _confirmarEliminarRestaurante(
+              context,
+              ref,
+              restaurante!.nombre,
+            ),
           ),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
           Center(
             child: GestureDetector(
-              onTap: () => _verFotoGrande(context, restaurante!.nombre, restaurante.fotoPath),
-              child: FotoThumbnail(
+              onTap: () => _verFotoGrande(
+                context,
+                restaurante!.nombre,
+                restaurante.fotoPath,
+              ),
+              child: FotoDecorada(
                 fotoPath: restaurante.fotoPath,
-                size: 140,
-                borderRadius: const BorderRadius.all(Radius.circular(16)),
+                width: MediaQuery.sizeOf(context).width * 0.78,
+                aspectRatio: 1,
+                borderRadius: 18,
+                rotationDegrees: -1.5,
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          if (restaurante.ubicacion != null && restaurante.ubicacion!.isNotEmpty)
-            Row(
-              children: [
-                Icon(
-                  Icons.location_on,
-                  size: 18,
-                  color: Theme.of(context).extension<BrandAccentColors>()?.accent,
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text.rich(
-                    TextSpan(
-                      style: Theme.of(context).textTheme.bodyLarge,
-                      children: [
-                        const TextSpan(
-                          text: 'Ubicación: ',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        TextSpan(text: restaurante.ubicacion),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Icon(
-                Icons.star,
-                size: 18,
-                color: Theme.of(context).extension<BrandAccentColors>()?.rating,
-              ),
-              const SizedBox(width: 4),
-              Text.rich(
-                TextSpan(
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  children: [
-                    const TextSpan(
-                      text: 'Nota media: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextSpan(text: media == null ? '—' : '${media.toStringAsFixed(2)} / 10'),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.info_outline, size: 18),
-                tooltip: 'Nota media de todos los platos registrados',
-                visualDensity: VisualDensity.compact,
-                onPressed: () => showDialog<void>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Nota media'),
-                    content: const Text(
-                      'Es el promedio de las puntuaciones de todos los platos '
-                      'registrados en este restaurante.',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Cerrar'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Icon(
-                Icons.repeat,
-                size: 18,
-                color: Theme.of(context).extension<BrandAccentColors>()?.strongText,
-              ),
-              const SizedBox(width: 4),
-              Text.rich(
-                TextSpan(
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  children: [
-                    const TextSpan(
-                      text: 'Visitas: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextSpan(text: '${restaurante.visitas}'),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.edit, size: 16),
-                tooltip: 'Corregir número de visitas',
-                visualDensity: VisualDensity.compact,
-                onPressed: () => _editarVisitas(context, ref, restaurante!.visitas),
-              ),
-            ],
+          const SizedBox(height: 22),
+          _InfoCard(
+            accent: accent,
+            restaurante: restaurante,
+            media: media,
+            onVerNotaMedia: () => _explicarNotaMedia(context),
+            onEditarVisitas: () =>
+                _editarVisitas(context, ref, restaurante!.visitas),
           ),
           if (tags.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Wrap(
-              spacing: 8,
-              children: tags.map((t) => Chip(label: Text(t.nombre))).toList(),
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (var i = 0; i < tags.length; i++)
+                  TagChip(nombre: tags[i].nombre, index: i, accent: accent),
+              ],
             ),
           ],
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => ref.read(restauranteRepositoryProvider).registrarVisita(restauranteId),
-            icon: const Icon(Icons.check_circle_outline),
-            label: const Text('Registrar visita'),
-          ),
-          const Divider(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Notas', style: Theme.of(context).textTheme.titleMedium),
-              TextButton.icon(
-                onPressed: () => _editarNotas(context, ref, restaurante!, tags),
-                icon: const Icon(Icons.edit),
-                label: const Text('Editar'),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: accent.accentInk, width: 1.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-            ],
+              onPressed: () => ref
+                  .read(restauranteRepositoryProvider)
+                  .registrarVisita(restauranteId),
+              icon: Icon(Icons.check_circle_outline, color: accent.accentInk),
+              label: Text(
+                'Registrar visita',
+                style: TextStyle(
+                  fontFamily: 'Newsreader',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  color: accent.accentInk,
+                ),
+              ),
+            ),
           ),
+          const SizedBox(height: 28),
+          _EncabezadoSeccion(
+            accent: accent,
+            titulo: 'Notas',
+            accionTexto: 'Editar',
+            accionIcono: Icons.edit,
+            onAccion: () => _editarNotas(context, ref, restaurante!, tags),
+          ),
+          const SizedBox(height: 8),
+          CajaNotas(
+            child: Text(
+              restaurante.notas != null && restaurante.notas!.isNotEmpty
+                  ? restaurante.notas!
+                  : 'Sin notas todavía.',
+              style: restaurante.notas != null && restaurante.notas!.isNotEmpty
+                  ? TextStyle(
+                      fontFamily: 'Work Sans',
+                      fontSize: 14,
+                      color: accent.strongText,
+                    )
+                  : TextStyle(
+                      fontFamily: 'Caveat',
+                      fontSize: 21,
+                      fontWeight: FontWeight.w600,
+                      color: accent.inkSoft,
+                    ),
+            ),
+          ),
+          const SizedBox(height: 28),
           Text(
-            restaurante.notas != null && restaurante.notas!.isNotEmpty
-                ? restaurante.notas!
-                : 'Sin notas.',
+            'Platos',
+            style: TextStyle(
+              fontFamily: 'Newsreader',
+              fontWeight: FontWeight.w700,
+              fontSize: 19,
+              color: accent.strongText,
+            ),
           ),
-          const Divider(height: 32),
-          Text('Platos', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           CategoriaPlatosSection(
             label: 'Entrantes',
@@ -306,31 +276,51 @@ class RestauranteDetailScreen extends ConsumerWidget {
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
               onPressed: () => _mostrarDialogoNuevaCategoria(context, ref),
-              icon: const Icon(Icons.add_circle_outline),
-              label: const Text('Añadir más'),
+              icon: Icon(Icons.add_circle_outline, color: accent.accentInk),
+              label: Text(
+                'Añadir más',
+                style: TextStyle(
+                  fontFamily: 'Work Sans',
+                  fontWeight: FontWeight.w600,
+                  color: accent.accentInk,
+                ),
+              ),
             ),
           ),
-          const Divider(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Próxima vez pedir', style: Theme.of(context).textTheme.titleMedium),
-              TextButton.icon(
-                onPressed: () => _mostrarDialogoNuevoRecordatorio(context, ref),
-                icon: const Icon(Icons.add),
-                label: const Text('Añadir'),
-              ),
-            ],
+          const SizedBox(height: 20),
+          _EncabezadoSeccion(
+            accent: accent,
+            titulo: 'Próxima vez pedir',
+            accionTexto: 'Añadir',
+            accionIcono: Icons.add,
+            onAccion: () => _mostrarDialogoNuevoRecordatorio(context, ref),
           ),
-          if (recordatorios.isEmpty) const Text('Sin recordatorios pendientes.'),
+          const SizedBox(height: 8),
+          if (recordatorios.isEmpty)
+            Text(
+              'Sin recordatorios pendientes.',
+              style: TextStyle(
+                fontFamily: 'Caveat',
+                fontSize: 21,
+                fontWeight: FontWeight.w600,
+                color: accent.inkSoft,
+              ),
+            ),
           for (final recordatorio in recordatorios)
             CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
               value: recordatorio.hecho,
+              activeColor: accent.accent,
               title: Text(
                 recordatorio.texto,
-                style: recordatorio.hecho
-                    ? const TextStyle(decoration: TextDecoration.lineThrough)
-                    : null,
+                style: TextStyle(
+                  fontFamily: 'Work Sans',
+                  fontSize: 14,
+                  color: accent.strongText,
+                  decoration: recordatorio.hecho
+                      ? TextDecoration.lineThrough
+                      : null,
+                ),
               ),
               onChanged: (value) => ref
                   .read(recordatorioRepositoryProvider)
@@ -338,7 +328,11 @@ class RestauranteDetailScreen extends ConsumerWidget {
               secondary: IconButton(
                 icon: const Icon(Icons.delete_outline),
                 tooltip: 'Eliminar recordatorio',
-                onPressed: () => _confirmarEliminarRecordatorio(context, ref, recordatorio.id),
+                onPressed: () => _confirmarEliminarRecordatorio(
+                  context,
+                  ref,
+                  recordatorio.id,
+                ),
               ),
             ),
         ],
@@ -382,6 +376,25 @@ class RestauranteDetailScreen extends ConsumerWidget {
     );
   }
 
+  void _explicarNotaMedia(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nota media'),
+        content: const Text(
+          'Es el promedio de las puntuaciones de todos los platos '
+          'registrados en este restaurante.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _confirmarEliminarRestaurante(
     BuildContext context,
     WidgetRef ref,
@@ -410,7 +423,11 @@ class RestauranteDetailScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _editarVisitas(BuildContext context, WidgetRef ref, int visitasActuales) async {
+  Future<void> _editarVisitas(
+    BuildContext context,
+    WidgetRef ref,
+    int visitasActuales,
+  ) async {
     final controller = TextEditingController(text: '$visitasActuales');
     final nuevoValor = await showDialog<int>(
       context: context,
@@ -428,14 +445,17 @@ class RestauranteDetailScreen extends ConsumerWidget {
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(context).pop(int.tryParse(controller.text.trim())),
+            onPressed: () =>
+                Navigator.of(context).pop(int.tryParse(controller.text.trim())),
             child: const Text('Guardar'),
           ),
         ],
       ),
     );
     if (nuevoValor != null && nuevoValor >= 0) {
-      await ref.read(restauranteRepositoryProvider).setVisitas(restauranteId, nuevoValor);
+      await ref
+          .read(restauranteRepositoryProvider)
+          .setVisitas(restauranteId, nuevoValor);
     }
   }
 
@@ -454,7 +474,9 @@ class RestauranteDetailScreen extends ConsumerWidget {
           controller: controller,
           autofocus: true,
           maxLines: 4,
-          decoration: const InputDecoration(hintText: 'Notas sobre este restaurante'),
+          decoration: const InputDecoration(
+            hintText: 'Notas sobre este restaurante',
+          ),
         ),
         actions: [
           TextButton(
@@ -469,7 +491,9 @@ class RestauranteDetailScreen extends ConsumerWidget {
       ),
     );
     if (nuevoTexto != null) {
-      await ref.read(restauranteRepositoryProvider).update(
+      await ref
+          .read(restauranteRepositoryProvider)
+          .update(
             id: restaurante.id,
             nombre: restaurante.nombre,
             ubicacion: restaurante.ubicacion,
@@ -506,7 +530,10 @@ class RestauranteDetailScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _mostrarDialogoNuevoRecordatorio(BuildContext context, WidgetRef ref) async {
+  Future<void> _mostrarDialogoNuevoRecordatorio(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final controller = TextEditingController();
     final texto = await showDialog<String>(
       context: context,
@@ -515,7 +542,9 @@ class RestauranteDetailScreen extends ConsumerWidget {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'Qué pedir la próxima vez'),
+          decoration: const InputDecoration(
+            hintText: 'Qué pedir la próxima vez',
+          ),
         ),
         actions: [
           TextButton(
@@ -536,7 +565,10 @@ class RestauranteDetailScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _mostrarDialogoNuevaCategoria(BuildContext context, WidgetRef ref) async {
+  Future<void> _mostrarDialogoNuevaCategoria(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final controller = TextEditingController();
     final nombre = await showDialog<String>(
       context: context,
@@ -569,10 +601,246 @@ class RestauranteDetailScreen extends ConsumerWidget {
         final mensaje = e is CategoriaDuplicadaException
             ? e.toString()
             : 'No se pudo crear la categoría.';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mensaje)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mensaje)));
       }
     }
+  }
+}
+
+/// Info card ("Ubicación", "Nota media", "Visitas") shown near the top of
+/// the restaurant detail screen — a [_FilaInfo] per fact, the last one
+/// carrying the visit counter plus the [_BotonEditarVisitas] shortcut.
+class _InfoCard extends StatelessWidget {
+  final BrandAccentColors accent;
+  final Restaurante restaurante;
+  final double? media;
+  final VoidCallback onVerNotaMedia;
+  final VoidCallback onEditarVisitas;
+
+  const _InfoCard({
+    required this.accent,
+    required this.restaurante,
+    required this.media,
+    required this.onVerNotaMedia,
+    required this.onEditarVisitas,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final media = this.media;
+    return Container(
+      decoration: BoxDecoration(
+        color: accent.paperCard,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          if (restaurante.ubicacion != null &&
+              restaurante.ubicacion!.isNotEmpty)
+            _FilaInfo(
+              accent: accent,
+              icon: Icons.location_on,
+              label: 'Ubicación',
+              child: Text(
+                restaurante.ubicacion!,
+                style: TextStyle(
+                  fontFamily: 'Work Sans',
+                  fontSize: 14,
+                  color: accent.strongText,
+                ),
+              ),
+            ),
+          _FilaInfo(
+            accent: accent,
+            icon: Icons.star,
+            label: 'Nota media',
+            child: GestureDetector(
+              onTap: onVerNotaMedia,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    media == null ? '—' : media.toStringAsFixed(2),
+                    style: TextStyle(
+                      fontFamily: 'Newsreader',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                      color: accent.strongText,
+                    ),
+                  ),
+                  if (media != null)
+                    Text(
+                      ' /10',
+                      style: TextStyle(
+                        fontFamily: 'Work Sans',
+                        fontSize: 12,
+                        color: accent.inkSoft,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          _FilaInfo(
+            accent: accent,
+            icon: Icons.repeat,
+            label: 'Visitas',
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${restaurante.visitas}',
+                  style: TextStyle(
+                    fontFamily: 'Newsreader',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: accent.strongText,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                _BotonEditarVisitas(accent: accent, onPressed: onEditarVisitas),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One row of the info card ("Ubicación", "Nota media", "Visitas"):
+/// leading icon + label on the left, arbitrary trailing content on the
+/// right, separated from the next row by a hairline `ruleLine`.
+class _FilaInfo extends StatelessWidget {
+  final BrandAccentColors accent;
+  final IconData icon;
+  final String label;
+  final Widget child;
+
+  const _FilaInfo({
+    required this.accent,
+    required this.icon,
+    required this.label,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: accent.ruleLine)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 17, color: accent.accentInk),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Work Sans',
+              fontSize: 13.5,
+              color: accent.inkSoft,
+            ),
+          ),
+          const Spacer(),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+/// Small circular "edit visits" button — opens the "Corregir visitas"
+/// dialog (same as tapping the visit count used to do). The visible ring
+/// stays 30px (the design), but the [InkWell] fills a 44dp hit area
+/// centered on it.
+class _BotonEditarVisitas extends StatelessWidget {
+  final BrandAccentColors accent;
+  final VoidCallback onPressed;
+
+  static const double _visualSize = 30;
+  static const double _minTapSize = 44;
+
+  const _BotonEditarVisitas({required this.accent, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onPressed,
+        child: SizedBox(
+          width: _minTapSize,
+          height: _minTapSize,
+          child: Center(
+            child: Container(
+              width: _visualSize,
+              height: _visualSize,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: accent.accentInk, width: 1.2),
+              ),
+              child: Icon(
+                Icons.edit_outlined,
+                size: 15,
+                color: accent.accentInk,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EncabezadoSeccion extends StatelessWidget {
+  final BrandAccentColors accent;
+  final String titulo;
+  final String accionTexto;
+  final IconData accionIcono;
+  final VoidCallback onAccion;
+
+  const _EncabezadoSeccion({
+    required this.accent,
+    required this.titulo,
+    required this.accionTexto,
+    required this.accionIcono,
+    required this.onAccion,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          titulo,
+          style: TextStyle(
+            fontFamily: 'Newsreader',
+            fontWeight: FontWeight.w700,
+            fontSize: 19,
+            color: accent.strongText,
+          ),
+        ),
+        TextButton.icon(
+          onPressed: onAccion,
+          icon: Icon(accionIcono, size: 17, color: accent.accentInk),
+          label: Text(
+            accionTexto,
+            style: TextStyle(
+              fontFamily: 'Work Sans',
+              fontWeight: FontWeight.w600,
+              color: accent.accentInk,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

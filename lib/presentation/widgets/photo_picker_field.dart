@@ -62,7 +62,9 @@ class PhotoPickerField extends StatelessWidget {
       return;
     }
 
-    final origen = opcion == _OpcionFoto.camara ? ImageSource.camera : ImageSource.gallery;
+    final origen = opcion == _OpcionFoto.camara
+        ? ImageSource.camera
+        : ImageSource.gallery;
     final elegida = await ImagePicker().pickImage(
       source: origen,
       maxWidth: 1600,

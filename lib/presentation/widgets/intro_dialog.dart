@@ -39,11 +39,14 @@ Future<void> mostrarDialogoIntro(BuildContext context, WidgetRef ref) async {
             const SizedBox(height: 12),
             CheckboxListTile(
               value: cargarMuestra,
-              onChanged: (value) => setState(() => cargarMuestra = value ?? false),
+              onChanged: (value) =>
+                  setState(() => cargarMuestra = value ?? false),
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
               title: const Text('Cargar restaurantes de prueba'),
-              subtitle: const Text('Para que veas cómo funciona antes de añadir los tuyos'),
+              subtitle: const Text(
+                'Para que veas cómo funciona antes de añadir los tuyos',
+              ),
             ),
           ],
         ),

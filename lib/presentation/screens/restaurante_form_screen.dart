@@ -21,7 +21,8 @@ class RestauranteFormScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<RestauranteFormScreen> createState() => _RestauranteFormScreenState();
+  ConsumerState<RestauranteFormScreen> createState() =>
+      _RestauranteFormScreenState();
 }
 
 class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
@@ -50,9 +51,15 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
   @override
   void initState() {
     super.initState();
-    _nombreController = TextEditingController(text: widget.restaurante?.nombre ?? '');
-    _ubicacionController = TextEditingController(text: widget.restaurante?.ubicacion ?? '');
-    _notasController = TextEditingController(text: widget.restaurante?.notas ?? '');
+    _nombreController = TextEditingController(
+      text: widget.restaurante?.nombre ?? '',
+    );
+    _ubicacionController = TextEditingController(
+      text: widget.restaurante?.ubicacion ?? '',
+    );
+    _notasController = TextEditingController(
+      text: widget.restaurante?.notas ?? '',
+    );
     _tags = [...widget.tagsIniciales];
     _fotoPathOriginal = widget.restaurante?.fotoPath;
     _fotoPath = _fotoPathOriginal;
@@ -119,10 +126,13 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final restaurantesExistentes = ref.watch(restaurantesProvider).value ?? const [];
+    final restaurantesExistentes =
+        ref.watch(restaurantesProvider).value ?? const [];
 
     return Scaffold(
-      appBar: AppBar(title: Text(_esEdicion ? 'Editar restaurante' : 'Nuevo restaurante')),
+      appBar: AppBar(
+        title: Text(_esEdicion ? 'Editar restaurante' : 'Nuevo restaurante'),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -144,9 +154,11 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
               validator: (value) {
                 final nombre = value?.trim() ?? '';
                 if (nombre.isEmpty) return 'El nombre es obligatorio';
-                final duplicado = restaurantesExistentes.any((r) =>
-                    r.id != widget.restaurante?.id &&
-                    r.nombre.trim().toLowerCase() == nombre.toLowerCase());
+                final duplicado = restaurantesExistentes.any(
+                  (r) =>
+                      r.id != widget.restaurante?.id &&
+                      r.nombre.trim().toLowerCase() == nombre.toLowerCase(),
+                );
                 if (duplicado) return 'Ya existe un restaurante con ese nombre';
                 return null;
               },
@@ -172,10 +184,12 @@ class _RestauranteFormScreenState extends ConsumerState<RestauranteFormScreen> {
             Wrap(
               spacing: 8,
               children: _tags
-                  .map((tag) => Chip(
-                        label: Text(tag),
-                        onDeleted: () => setState(() => _tags.remove(tag)),
-                      ))
+                  .map(
+                    (tag) => Chip(
+                      label: Text(tag),
+                      onDeleted: () => setState(() => _tags.remove(tag)),
+                    ),
+                  )
                   .toList(),
             ),
             const SizedBox(height: 12),

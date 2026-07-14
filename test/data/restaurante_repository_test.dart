@@ -91,7 +91,12 @@ void main() {
 
   test('delete removes the restaurant and its dishes', () async {
     final id = await restaurantes.insert(nombre: 'Pekín');
-    await platos.insert(restauranteId: id, tipo: 'Principal', nombre: 'Pollo frito', puntuacion: 9);
+    await platos.insert(
+      restauranteId: id,
+      tipo: 'Principal',
+      nombre: 'Pollo frito',
+      puntuacion: 9,
+    );
 
     await restaurantes.delete(id);
 
@@ -113,7 +118,10 @@ void main() {
   test('update deletes the old restaurant photo file when replaced', () async {
     final fotoAntigua = await crearFoto('antigua.jpg');
     final fotoNueva = await crearFoto('nueva.jpg');
-    final id = await restaurantes.insert(nombre: 'Camelot', fotoPath: fotoAntigua);
+    final id = await restaurantes.insert(
+      nombre: 'Camelot',
+      fotoPath: fotoAntigua,
+    );
 
     await restaurantes.update(id: id, nombre: 'Camelot', fotoPath: fotoNueva);
 
@@ -123,14 +131,21 @@ void main() {
     expect(leido!.fotoPath, fotoNueva);
   });
 
-  test('update keeps the photo file when fotoPath is passed unchanged', () async {
-    final foto = await crearFoto('igual.jpg');
-    final id = await restaurantes.insert(nombre: 'Camelot', fotoPath: foto);
+  test(
+    'update keeps the photo file when fotoPath is passed unchanged',
+    () async {
+      final foto = await crearFoto('igual.jpg');
+      final id = await restaurantes.insert(nombre: 'Camelot', fotoPath: foto);
 
-    await restaurantes.update(id: id, nombre: 'Camelot renombrado', fotoPath: foto);
+      await restaurantes.update(
+        id: id,
+        nombre: 'Camelot renombrado',
+        fotoPath: foto,
+      );
 
-    expect(File(foto).existsSync(), isTrue);
-  });
+      expect(File(foto).existsSync(), isTrue);
+    },
+  );
 
   test(
     'delete removes the restaurant photo and every dish photo underneath it',
@@ -139,7 +154,10 @@ void main() {
       final fotoPlatoUno = await crearFoto('plato1.jpg');
       final fotoPlatoDos = await crearFoto('plato2.jpg');
 
-      final id = await restaurantes.insert(nombre: 'Pekín', fotoPath: fotoRestaurante);
+      final id = await restaurantes.insert(
+        nombre: 'Pekín',
+        fotoPath: fotoRestaurante,
+      );
       await platos.insert(
         restauranteId: id,
         tipo: 'Principal',

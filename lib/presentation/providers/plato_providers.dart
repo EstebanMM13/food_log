@@ -4,8 +4,10 @@ import '../../data/local/app_database.dart';
 import 'repository_providers.dart';
 
 /// Dishes for one restaurant (detail screen).
-final platosDeRestauranteProvider =
-    StreamProvider.family<List<Plato>, String>((ref, restauranteId) {
+final platosDeRestauranteProvider = StreamProvider.family<List<Plato>, String>((
+  ref,
+  restauranteId,
+) {
   return ref.watch(platoRepositoryProvider).watchByRestaurante(restauranteId);
 });
 

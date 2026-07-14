@@ -68,7 +68,10 @@ class PhotoStorage {
   /// replacing the photo on ONE row would silently delete it for every other
   /// row that happens to share that file. Always generating a fresh name
   /// avoids that entirely.
-  static Future<String> guardarBytes(List<int> bytes, String nombreArchivo) async {
+  static Future<String> guardarBytes(
+    List<int> bytes,
+    String nombreArchivo,
+  ) async {
     final carpeta = await _carpetaFotos();
     final extension = p.extension(nombreArchivo);
     final destino = File(p.join(carpeta.path, '${newId()}$extension'));

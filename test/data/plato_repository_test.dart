@@ -84,23 +84,26 @@ void main() {
     expect(actualizado.fotoPath, fotoNueva);
   });
 
-  test('update keeps the photo file when fotoPath is passed unchanged', () async {
-    final foto = await crearFoto('igual.jpg');
+  test(
+    'update keeps the photo file when fotoPath is passed unchanged',
+    () async {
+      final foto = await crearFoto('igual.jpg');
 
-    final id = await platos.insert(
-      restauranteId: restauranteId,
-      tipo: 'Entrante',
-      nombre: 'Patatas con queso y bacon',
-      puntuacion: 9,
-      fotoPath: foto,
-    );
-    final actual = (await platos.watchByRestaurante(restauranteId).first)
-        .firstWhere((d) => d.id == id);
+      final id = await platos.insert(
+        restauranteId: restauranteId,
+        tipo: 'Entrante',
+        nombre: 'Patatas con queso y bacon',
+        puntuacion: 9,
+        fotoPath: foto,
+      );
+      final actual = (await platos.watchByRestaurante(restauranteId).first)
+          .firstWhere((d) => d.id == id);
 
-    await platos.update(actual.copyWith(nombre: 'Patatas bravas'));
+      await platos.update(actual.copyWith(nombre: 'Patatas bravas'));
 
-    expect(File(foto).existsSync(), isTrue);
-  });
+      expect(File(foto).existsSync(), isTrue);
+    },
+  );
 
   test('delete removes the dish photo file', () async {
     final fotoPath = await crearFoto('pollo.jpg');

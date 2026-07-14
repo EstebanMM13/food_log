@@ -34,7 +34,8 @@ class FotoThumbnail extends StatelessWidget {
             : Image.file(
                 File(path),
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => _placeholder(context),
+                errorBuilder: (context, error, stackTrace) =>
+                    _placeholder(context),
               ),
       ),
     );

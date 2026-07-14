@@ -55,28 +55,37 @@ Future<String> exportDatabaseToJson({
   final restaurantesJson = <Map<String, dynamic>>[];
   for (final restaurante in lista) {
     final tags = await restaurantes.watchTagsFor(restaurante.id).first;
-    final platosDelRestaurante = await platos.watchByRestaurante(restaurante.id).first;
-    final recordatoriosDelRestaurante =
-        await recordatorios.watchByRestaurante(restaurante.id).first;
-    final categoriasDelRestaurante =
-        await categorias.watchByRestaurante(restaurante.id).first;
+    final platosDelRestaurante = await platos
+        .watchByRestaurante(restaurante.id)
+        .first;
+    final recordatoriosDelRestaurante = await recordatorios
+        .watchByRestaurante(restaurante.id)
+        .first;
+    final categoriasDelRestaurante = await categorias
+        .watchByRestaurante(restaurante.id)
+        .first;
 
     restaurantesJson.add({
       'nombre': restaurante.nombre,
       'ubicacion': restaurante.ubicacion,
       'notas': restaurante.notas,
       'visitas': restaurante.visitas,
-      'fotoPath':
-          restaurante.fotoPath == null ? null : p.basename(restaurante.fotoPath!),
+      'fotoPath': restaurante.fotoPath == null
+          ? null
+          : p.basename(restaurante.fotoPath!),
       'tags': tags.map((t) => t.nombre).toList(),
       'platos': platosDelRestaurante
-          .map((plato) => {
-                'tipo': plato.tipo,
-                'nombre': plato.nombre,
-                'puntuacion': plato.puntuacion,
-                'comentario': plato.comentario,
-                'fotoPath': plato.fotoPath == null ? null : p.basename(plato.fotoPath!),
-              })
+          .map(
+            (plato) => {
+              'tipo': plato.tipo,
+              'nombre': plato.nombre,
+              'puntuacion': plato.puntuacion,
+              'comentario': plato.comentario,
+              'fotoPath': plato.fotoPath == null
+                  ? null
+                  : p.basename(plato.fotoPath!),
+            },
+          )
           .toList(),
       'recordatorios': recordatoriosDelRestaurante
           .map((r) => {'texto': r.texto, 'hecho': r.hecho})
@@ -247,7 +256,8 @@ Future<ImportSummary> importarDesdeZip(
   }
 
   final archive = archivoDecodificado!;
-  final data = jsonDecode(utf8.decode(entradaJson.content)) as Map<String, dynamic>;
+  final data =
+      jsonDecode(utf8.decode(entradaJson.content)) as Map<String, dynamic>;
 
   Future<String?> resolverFoto(String? nombreArchivoFoto) async {
     if (nombreArchivoFoto == null) return null;
@@ -318,8 +328,9 @@ Future<ImportSummary> _insertarDesdeMapa(
       var categoriasCount = 0;
 
       for (final item in lista) {
-        final fotoRestaurante =
-            await resolverFotoConSeguimiento(item['fotoPath'] as String?);
+        final fotoRestaurante = await resolverFotoConSeguimiento(
+          item['fotoPath'] as String?,
+        );
         final id = await restaurantes.insert(
           nombre: item['nombre'] as String,
           ubicacion: item['ubicacion'] as String?,
@@ -329,11 +340,12 @@ Future<ImportSummary> _insertarDesdeMapa(
           fotoPath: fotoRestaurante,
         );
 
-        final platosDelRestaurante =
-            ((item['platos'] as List?) ?? const []).cast<Map<String, dynamic>>();
+        final platosDelRestaurante = ((item['platos'] as List?) ?? const [])
+            .cast<Map<String, dynamic>>();
         for (final plato in platosDelRestaurante) {
-          final fotoPlato =
-              await resolverFotoConSeguimiento(plato['fotoPath'] as String?);
+          final fotoPlato = await resolverFotoConSeguimiento(
+            plato['fotoPath'] as String?,
+          );
           await platos.insert(
             restauranteId: id,
             tipo: plato['tipo'] as String,
@@ -345,8 +357,9 @@ Future<ImportSummary> _insertarDesdeMapa(
           platosCount++;
         }
 
-        final recordatoriosDelRestaurante = ((item['recordatorios'] as List?) ?? const [])
-            .cast<Map<String, dynamic>>();
+        final recordatoriosDelRestaurante =
+            ((item['recordatorios'] as List?) ?? const [])
+                .cast<Map<String, dynamic>>();
         for (final recordatorio in recordatoriosDelRestaurante) {
           final recordatorioId = await recordatorios.insert(
             restauranteId: id,
@@ -358,8 +371,9 @@ Future<ImportSummary> _insertarDesdeMapa(
         }
         recordatoriosCount += recordatoriosDelRestaurante.length;
 
-        final categoriasDelRestaurante = ((item['categorias'] as List?) ?? const [])
-            .cast<Map<String, dynamic>>();
+        final categoriasDelRestaurante =
+            ((item['categorias'] as List?) ?? const [])
+                .cast<Map<String, dynamic>>();
         for (final categoria in categoriasDelRestaurante) {
           await categorias.insert(
             restauranteId: id,

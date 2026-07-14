@@ -34,7 +34,9 @@ class ThemeModeNotifier extends AsyncNotifier<ThemeMode> {
     final ThemeMode nuevoModo;
     switch (actual) {
       case ThemeMode.system:
-        nuevoModo = currentBrightness == Brightness.dark ? ThemeMode.light : ThemeMode.dark;
+        nuevoModo = currentBrightness == Brightness.dark
+            ? ThemeMode.light
+            : ThemeMode.dark;
       case ThemeMode.light:
         nuevoModo = ThemeMode.dark;
       case ThemeMode.dark:
@@ -47,4 +49,6 @@ class ThemeModeNotifier extends AsyncNotifier<ThemeMode> {
   }
 }
 
-final themeModeProvider = AsyncNotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
+final themeModeProvider = AsyncNotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);

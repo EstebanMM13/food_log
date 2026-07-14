@@ -6,7 +6,7 @@ import 'repository_providers.dart';
 /// Reminders ("order this next time") for one restaurant.
 final recordatoriosDeRestauranteProvider =
     StreamProvider.family<List<Recordatorio>, String>((ref, restauranteId) {
-  return ref
-      .watch(recordatorioRepositoryProvider)
-      .watchByRestaurante(restauranteId);
-});
+      return ref
+          .watch(recordatorioRepositoryProvider)
+          .watchByRestaurante(restauranteId);
+    });

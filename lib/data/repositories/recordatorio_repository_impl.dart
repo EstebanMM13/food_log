@@ -11,9 +11,9 @@ class RecordatorioRepositoryImpl implements RecordatorioRepository {
 
   @override
   Stream<List<Recordatorio>> watchByRestaurante(String restauranteId) {
-    return (_db.select(_db.recordatorios)
-          ..where((t) => t.restauranteId.equals(restauranteId)))
-        .watch();
+    return (_db.select(
+      _db.recordatorios,
+    )..where((t) => t.restauranteId.equals(restauranteId))).watch();
   }
 
   @override
@@ -22,7 +22,9 @@ class RecordatorioRepositoryImpl implements RecordatorioRepository {
     required String texto,
   }) async {
     final id = newId();
-    await _db.into(_db.recordatorios).insert(
+    await _db
+        .into(_db.recordatorios)
+        .insert(
           RecordatoriosCompanion.insert(
             id: id,
             restauranteId: restauranteId,

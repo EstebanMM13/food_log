@@ -6,8 +6,7 @@ import 'restaurantes_table.dart';
 /// Entrantes/Platos/Postres sections (e.g. "Bebidas", "Tapas").
 class Categorias extends Table {
   TextColumn get id => text()();
-  TextColumn get restauranteId =>
-      text().references(Restaurantes, #id)();
+  TextColumn get restauranteId => text().references(Restaurantes, #id)();
   TextColumn get nombre => text()();
   IntColumn get orden => integer().withDefault(const Constant(0))();
 

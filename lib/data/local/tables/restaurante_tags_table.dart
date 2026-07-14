@@ -7,8 +7,7 @@ import 'tags_table.dart';
 /// tags. Composite primary key (restauranteId, tagId) — no surrogate id
 /// needed since the pair itself is already unique.
 class RestauranteTags extends Table {
-  TextColumn get restauranteId =>
-      text().references(Restaurantes, #id)();
+  TextColumn get restauranteId => text().references(Restaurantes, #id)();
   TextColumn get tagId => text().references(Tags, #id)();
 
   @override

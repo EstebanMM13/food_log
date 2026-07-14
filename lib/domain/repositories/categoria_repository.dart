@@ -8,7 +8,8 @@ class CategoriaDuplicadaException implements Exception {
   CategoriaDuplicadaException(this.nombre);
 
   @override
-  String toString() => 'Ya existe una categoría llamada "$nombre" para este restaurante.';
+  String toString() =>
+      'Ya existe una categoría llamada "$nombre" para este restaurante.';
 }
 
 /// Repository for user-defined extra dish categories (beyond the fixed
