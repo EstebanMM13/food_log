@@ -70,6 +70,12 @@ storage, and a stats screen that answers the questions the notes never could.
       <img src="assets/screenshots/restaurant-dishes.jpg" width="200" alt="Dishes by category" /><br />
       Dishes by category
     </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="assets/screenshots/restaurant-dishes2.jpg" width="200" alt="Dish detail" /><br />
+      Dish detail
+    </td>
     <td align="center">
       <img src="assets/screenshots/stats.jpg" width="200" alt="Statistics" /><br />
       Statistics
