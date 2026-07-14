@@ -285,14 +285,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         tooltip: 'Añadir restaurante',
         backgroundColor: accent.accent,
-        shape: const CircleBorder(),
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const RestauranteFormScreen()),
         ),
         // Ink (not white) on the terracotta fill, same AA-contrast fix as
         // `elevatedButtonTheme` in app_theme.dart — white-on-terracotta
         // falls below WCAG AA (~2.57:1) in dark mode.
-        child: const Icon(Icons.add, color: AppTheme.brandNavy),
+        child: const _SpoonForkIcon(color: AppTheme.brandNavy),
       ),
     );
   }
@@ -622,4 +621,72 @@ int _compararPorNota(
   if (notaA == null) return 1;
   if (notaB == null) return -1;
   return descendente ? notaB.compareTo(notaA) : notaA.compareTo(notaB);
+}
+
+/// Spoon+fork glyph from the app logo's circular badge, echoing the brand
+/// mark on the "add restaurant" FAB instead of a generic "+".
+class _SpoonForkIcon extends StatelessWidget {
+  final Color color;
+
+  const _SpoonForkIcon({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 22,
+      height: 22,
+      child: CustomPaint(painter: _SpoonForkPainter(color)),
+    );
+  }
+}
+
+class _SpoonForkPainter extends CustomPainter {
+  final Color color;
+
+  const _SpoonForkPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.09
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Spoon: an oval bowl with a stem down to the fork's stem baseline.
+    final bowl = Rect.fromCenter(
+      center: Offset(w * 0.28, h * 0.28),
+      width: w * 0.26,
+      height: h * 0.34,
+    );
+    canvas.drawOval(bowl, paint);
+    canvas.drawLine(
+      Offset(w * 0.28, h * 0.45),
+      Offset(w * 0.28, h * 0.88),
+      paint,
+    );
+
+    // Fork: three tines merging into a single stem.
+    for (final tx in [0.62, 0.72, 0.82]) {
+      canvas.drawLine(Offset(w * tx, h * 0.12), Offset(w * tx, h * 0.42), paint);
+    }
+    canvas.drawLine(
+      Offset(w * 0.62, h * 0.42),
+      Offset(w * 0.82, h * 0.42),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(w * 0.72, h * 0.42),
+      Offset(w * 0.72, h * 0.88),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _SpoonForkPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
