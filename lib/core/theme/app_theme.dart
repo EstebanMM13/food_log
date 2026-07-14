@@ -9,38 +9,36 @@ class AppTheme {
 
   /// Terracotta — was `#FF7B4B`. For solid FILLS (buttons, badges, icon
   /// accents), not for text on a light surface — see [brandOrangeInk].
-  static const Color brandOrange = Color(0xffd96b3a);
+  static const Color brandOrange = Color(0xffc9673a);
 
   /// Warm parchment — was the flatter `#F5EDE2` cream.
-  static const Color creamBackground = Color(0xffefe0c9);
+  static const Color creamBackground = Color(0xfff6efe3);
 
   /// Sepia ink — was navy `#2A3647`. Primary "ink" color for text/structure.
-  static const Color brandNavy = Color(0xff33261c);
+  static const Color brandNavy = Color(0xff2a2118);
 
   /// Darker terracotta for TEXT/icons directly on [creamBackground] or other
-  /// light surfaces — ~4.6:1 against the new parchment (still passes AA;
-  /// [brandOrange] itself is ~2.7:1 and fails). Unchanged from before — this
-  /// exact hue already worked against both the old cream and new parchment.
-  static const Color brandOrangeInk = Color(0xffa8451f);
+  /// light surfaces.
+  static const Color brandOrangeInk = Color(0xff9c4522);
 
   /// New secondary accent — muted moss, same warm-earthy family as the rest
   /// of the palette. For tags/labels/success states that shouldn't compete
   /// with the terracotta brand accent.
-  static const Color mossAccent = Color(0xff8a8256);
+  static const Color mossAccent = Color(0xff7d8256);
 
-  /// Rating/star color. Unchanged — still reads well against white cards;
-  /// only use as an icon fill, not as flat text on parchment.
-  static const Color ratingAmber = Color(0xffe8a23d);
+  /// Rating/star color. Only use as an icon fill, not as flat text on
+  /// parchment.
+  static const Color ratingAmber = Color(0xffd99a34);
 
   /// [brandNavy], lightened to the same hue family, for use as "strong"
   /// text/icon color on the dark theme's dark surfaces — brandNavy itself
   /// is near-invisible on a dark background.
-  static const Color _brandNavyOnDark = Color(0xffcdbfae);
+  static const Color _brandNavyOnDark = Color(0xffede7dc);
 
   /// Dark-theme paper background. Distinct from [creamBackground] (which
   /// only applies to the light theme) — the dark "Cuaderno" mock uses a
-  /// near-black warm brown, not a darkened parchment.
-  static const Color _paperDark = Color(0xff1d140d);
+  /// near-black neutral graphite, not a darkened parchment.
+  static const Color _paperDark = Color(0xff1c1b19);
 
   /// Dark-theme variants of the accent/rating/secondary hues — brighter and
   /// more saturated than their light counterparts so they still read
@@ -96,16 +94,16 @@ class AppTheme {
         rating: ratingAmber,
         secondary: mossAccent,
         tertiary: _inkBlueLight,
-        tertiaryTint: Color.fromRGBO(61, 100, 120, 0.14),
-        paperCard: Color(0xfffaf1e1),
-        paperCardAlt: Color(0xfff3e7d2),
-        inkSoft: Color(0xff7a6852),
-        terracottaTint: Color.fromRGBO(217, 107, 58, 0.14),
-        mossTint: Color.fromRGBO(138, 130, 86, 0.16),
-        amberTint: Color.fromRGBO(232, 162, 61, 0.20),
-        ruleLine: Color.fromRGBO(51, 38, 28, 0.13),
-        border: Color.fromRGBO(51, 38, 28, 0.12),
-        shadow: Color.fromRGBO(51, 38, 28, 0.20),
+        tertiaryTint: Color.fromRGBO(61, 100, 120, 0.12),
+        paperCard: Color(0xfffffcf5),
+        paperCardAlt: Color(0xffefe6d4),
+        inkSoft: Color(0xff8b7d68),
+        terracottaTint: Color.fromRGBO(201, 103, 58, 0.14),
+        mossTint: Color.fromRGBO(125, 130, 86, 0.14),
+        amberTint: Color.fromRGBO(217, 154, 52, 0.18),
+        ruleLine: Color.fromRGBO(42, 33, 24, 0.10),
+        border: Color.fromRGBO(42, 33, 24, 0.10),
+        shadow: Color.fromRGBO(42, 33, 24, 0.16),
       ),
     ],
   );
@@ -145,15 +143,15 @@ class AppTheme {
         secondary: _mossAccentDark,
         tertiary: _inkBlueDark,
         tertiaryTint: Color.fromRGBO(127, 174, 194, 0.18),
-        paperCard: Color(0xff3d2a1b),
-        paperCardAlt: Color(0xff4f3722),
-        inkSoft: Color(0xffc2ac8e),
-        terracottaTint: Color.fromRGBO(232, 137, 90, 0.20),
-        mossTint: Color.fromRGBO(180, 172, 128, 0.18),
-        amberTint: Color.fromRGBO(240, 182, 90, 0.18),
-        ruleLine: Color.fromRGBO(241, 226, 201, 0.10),
-        border: Color.fromRGBO(241, 226, 201, 0.14),
-        shadow: Color.fromRGBO(0, 0, 0, 0.45),
+        paperCard: Color(0xff262420),
+        paperCardAlt: Color(0xff302e28),
+        inkSoft: Color(0xff9c9488),
+        terracottaTint: Color.fromRGBO(232, 137, 90, 0.16),
+        mossTint: Color.fromRGBO(180, 172, 128, 0.16),
+        amberTint: Color.fromRGBO(240, 182, 90, 0.16),
+        ruleLine: Color.fromRGBO(237, 231, 220, 0.08),
+        border: Color.fromRGBO(237, 231, 220, 0.12),
+        shadow: Color.fromRGBO(0, 0, 0, 0.5),
       ),
     ],
   );
