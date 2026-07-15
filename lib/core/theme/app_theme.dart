@@ -54,6 +54,61 @@ class AppTheme {
   static const Color _inkBlueLight = Color(0xff3d6478);
   static const Color _inkBlueDark = Color(0xff7faec2);
 
+  /// "Washi tape index card" surface used by [TapedCard] — a warmer/darker
+  /// step than [creamBackground]/[paperCard] so a taped card reads as a
+  /// distinct scrap of paper stuck onto the section, not just another
+  /// [paperCard]. Dark variant follows the same lighten-and-warm pattern as
+  /// the other light/dark pairs above.
+  static const Color _parchmentLight = Color(0xfff2ead8);
+  static const Color _parchmentDark = Color(0xff3a3628);
+
+  /// Notebook rule-line color — solid warm tan for the horizontal lines
+  /// painted over [BrandAccentColors.parchment] pages (see `NotebookLines`),
+  /// distinct from [BrandAccentColors.ruleLine] (a translucent ink divider
+  /// used on any surface, not specifically a paper-ruling color). Dark
+  /// variant is a lightened step off [_parchmentDark] — lines need to read
+  /// lighter than the dark parchment surface they sit on, not darker.
+  static const Color _paperRuleLight = Color(0xffe4d7bd);
+  static const Color _paperRuleDark = Color(0xff4a4433);
+
+  /// Faded red margin line, notebook-style. Dark variant brighter/more
+  /// saturated for contrast against [_parchmentDark], same pattern as
+  /// [_brandOrangeDark]/[_mossAccentDark]/[_ratingAmberDark] above.
+  static const Color _paperMarginLight = Color(0xffd69a86);
+  static const Color _paperMarginDark = Color(0xffe3ac98);
+
+  /// Named type-scale roles shared across `lib/presentation` — screen
+  /// title, section title, item title (restaurant/category name) and the
+  /// small-caps "kicker" micro-label. Colors are intentionally omitted here
+  /// (callers apply `.copyWith(color: accent.something)`), matching how
+  /// every other Newsreader/Work Sans usage in the app already picks its
+  /// own color per surface.
+  static const TextStyle titleScreen = TextStyle(
+    fontFamily: 'Newsreader',
+    fontWeight: FontWeight.w700,
+    fontSize: 26,
+  );
+
+  static const TextStyle titleSection = TextStyle(
+    fontFamily: 'Newsreader',
+    fontWeight: FontWeight.w700,
+    fontSize: 19,
+  );
+
+  /// Unlike the two styles above, the kicker's color is fixed
+  /// ([BrandAccentColors.inkSoft]) rather than varying per call site, so it
+  /// takes the theme's [BrandAccentColors] and returns a ready-to-use style
+  /// instead of being a plain constant. Callers still need to apply
+  /// `.toUpperCase()` to the label text themselves — this only supplies the
+  /// style, not a text transform.
+  static TextStyle kicker(BrandAccentColors accent) => TextStyle(
+    fontFamily: 'Work Sans',
+    fontWeight: FontWeight.w600,
+    fontSize: 10.5,
+    letterSpacing: 1.4,
+    color: accent.inkSoft,
+  );
+
   static TextTheme _textTheme(Brightness brightness) {
     final base = brightness == Brightness.light
         ? Typography.material2021().black
@@ -71,12 +126,7 @@ class AppTheme {
       foregroundColor: brandOrangeInk,
       elevation: 0,
       scrolledUnderElevation: 0,
-      titleTextStyle: const TextStyle(
-        fontFamily: 'Newsreader',
-        color: brandNavy,
-        fontWeight: FontWeight.w700,
-        fontSize: 19,
-      ),
+      titleTextStyle: titleSection.copyWith(color: brandNavy),
     ),
     // Buttons filled with brandOrange should use ink (not white) text —
     // ink-on-terracotta clears AA, white-on-terracotta does not.
@@ -104,6 +154,9 @@ class AppTheme {
         ruleLine: Color.fromRGBO(42, 33, 24, 0.10),
         border: Color.fromRGBO(42, 33, 24, 0.10),
         shadow: Color.fromRGBO(42, 33, 24, 0.16),
+        parchment: _parchmentLight,
+        paperRule: _paperRuleLight,
+        paperMargin: _paperMarginLight,
       ),
     ],
   );
@@ -121,12 +174,7 @@ class AppTheme {
       foregroundColor: _brandOrangeInkDark,
       elevation: 0,
       scrolledUnderElevation: 0,
-      titleTextStyle: const TextStyle(
-        fontFamily: 'Newsreader',
-        color: _brandNavyOnDark,
-        fontWeight: FontWeight.w700,
-        fontSize: 19,
-      ),
+      titleTextStyle: titleSection.copyWith(color: _brandNavyOnDark),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -152,6 +200,9 @@ class AppTheme {
         ruleLine: Color.fromRGBO(237, 231, 220, 0.08),
         border: Color.fromRGBO(237, 231, 220, 0.12),
         shadow: Color.fromRGBO(0, 0, 0, 0.5),
+        parchment: _parchmentDark,
+        paperRule: _paperRuleDark,
+        paperMargin: _paperMarginDark,
       ),
     ],
   );
@@ -176,6 +227,9 @@ class BrandAccentColors extends ThemeExtension<BrandAccentColors> {
     required this.ruleLine,
     required this.border,
     required this.shadow,
+    required this.parchment,
+    required this.paperRule,
+    required this.paperMargin,
   });
 
   /// Terracotta, for solid fills (buttons, badges, icon strokes).
@@ -230,6 +284,38 @@ class BrandAccentColors extends ThemeExtension<BrandAccentColors> {
   /// Drop-shadow color for elevated cards.
   final Color shadow;
 
+  /// "Index card" paper surface for [TapedCard] — warmer/darker than
+  /// [paperCard] so a taped card reads as a distinct scrap of paper.
+  final Color parchment;
+
+  /// Notebook-page rule-line color, for [NotebookLines] and similar
+  /// "cuaderno" backgrounds drawn over [parchment].
+  final Color paperRule;
+
+  /// Faded red notebook margin line, for [NotebookLines] and similar
+  /// "cuaderno" backgrounds drawn over [parchment].
+  final Color paperMargin;
+
+  /// Alias for [parchment] — same color, named for call sites that think
+  /// of it as "paper" (e.g. notebook-page backgrounds) rather than the
+  /// [TapedCard] index-card surface. Do not add a second stored hex here;
+  /// this only exists to make call-site code read more clearly.
+  Color get paper => parchment;
+
+  /// Alias for [inkSoft], named for "cuaderno" call sites that think in
+  /// terms of "ink on paper" rather than the general-purpose soft-text role.
+  Color get paperInkSoft => inkSoft;
+
+  /// [secondary] (moss) at ~50% alpha, for washi-tape strips on
+  /// [TapedCard]. Derived on the fly rather than stored: it's a single
+  /// alpha tweak of an existing token, not an independent color that needs
+  /// its own light/dark pair.
+  Color get tapeMoss => secondary.withValues(alpha: 0.5);
+
+  /// [accent] (terracotta) at ~50% alpha, for washi-tape strips on
+  /// [TapedCard]. See [tapeMoss].
+  Color get tapeTerracotta => accent.withValues(alpha: 0.5);
+
   @override
   BrandAccentColors copyWith({
     Color? accent,
@@ -248,6 +334,9 @@ class BrandAccentColors extends ThemeExtension<BrandAccentColors> {
     Color? ruleLine,
     Color? border,
     Color? shadow,
+    Color? parchment,
+    Color? paperRule,
+    Color? paperMargin,
   }) {
     return BrandAccentColors(
       accent: accent ?? this.accent,
@@ -266,6 +355,9 @@ class BrandAccentColors extends ThemeExtension<BrandAccentColors> {
       ruleLine: ruleLine ?? this.ruleLine,
       border: border ?? this.border,
       shadow: shadow ?? this.shadow,
+      parchment: parchment ?? this.parchment,
+      paperRule: paperRule ?? this.paperRule,
+      paperMargin: paperMargin ?? this.paperMargin,
     );
   }
 
@@ -292,6 +384,10 @@ class BrandAccentColors extends ThemeExtension<BrandAccentColors> {
       ruleLine: Color.lerp(ruleLine, other.ruleLine, t) ?? ruleLine,
       border: Color.lerp(border, other.border, t) ?? border,
       shadow: Color.lerp(shadow, other.shadow, t) ?? shadow,
+      parchment: Color.lerp(parchment, other.parchment, t) ?? parchment,
+      paperRule: Color.lerp(paperRule, other.paperRule, t) ?? paperRule,
+      paperMargin:
+          Color.lerp(paperMargin, other.paperMargin, t) ?? paperMargin,
     );
   }
 }

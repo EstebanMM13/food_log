@@ -12,8 +12,10 @@ import '../providers/repository_providers.dart';
 import '../providers/restaurantes_provider.dart';
 import '../widgets/caja_notas.dart';
 import '../widgets/categoria_platos_section.dart';
+import '../widgets/empty_note.dart';
 import '../widgets/foto_rayada.dart';
 import '../widgets/foto_thumbnail.dart';
+import '../widgets/hand_check_painter.dart';
 import '../widgets/tag_chip.dart';
 import 'restaurante_form_screen.dart';
 
@@ -205,35 +207,29 @@ class RestauranteDetailScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           CajaNotas(
-            child: Text(
-              restaurante.notas != null && restaurante.notas!.isNotEmpty
-                  ? restaurante.notas!
-                  : 'Sin notas todavía.',
-              style: restaurante.notas != null && restaurante.notas!.isNotEmpty
-                  ? TextStyle(
+            child: restaurante.notas != null && restaurante.notas!.isNotEmpty
+                ? Text(
+                    restaurante.notas!,
+                    style: TextStyle(
                       fontFamily: 'Work Sans',
                       fontSize: 14,
                       color: accent.strongText,
-                    )
-                  : TextStyle(
-                      fontFamily: 'Caveat',
-                      fontSize: 21,
-                      fontWeight: FontWeight.w600,
-                      color: accent.inkSoft,
                     ),
-            ),
+                  )
+                : const EmptyNote(
+                    text: 'Sin notas todavía. Toca para escribir la primera.',
+                  ),
           ),
           const SizedBox(height: 28),
           Text(
             'Platos',
-            style: TextStyle(
-              fontFamily: 'Newsreader',
-              fontWeight: FontWeight.w700,
-              fontSize: 19,
-              color: accent.strongText,
-            ),
+            style: AppTheme.titleSection.copyWith(color: accent.strongText),
           ),
           const SizedBox(height: 8),
+          // Always render the category sections, even with zero dishes —
+          // each one carries its own "Añadir plato" row, the only entry
+          // point to log the first dish. Hiding them behind an empty-state
+          // note here would leave a fresh restaurant with no way to add one.
           CategoriaPlatosSection(
             label: 'Entrantes',
             platos: entrantes,
@@ -307,10 +303,18 @@ class RestauranteDetailScreen extends ConsumerWidget {
               ),
             ),
           for (final recordatorio in recordatorios)
-            CheckboxListTile(
+            ListTile(
               contentPadding: EdgeInsets.zero,
-              value: recordatorio.hecho,
-              activeColor: accent.accent,
+              onTap: () => ref
+                  .read(recordatorioRepositoryProvider)
+                  .setHecho(recordatorio.id, !recordatorio.hecho),
+              leading: _HandCheckBox(
+                accent: accent,
+                checked: recordatorio.hecho,
+                onChanged: (value) => ref
+                    .read(recordatorioRepositoryProvider)
+                    .setHecho(recordatorio.id, value),
+              ),
               title: Text(
                 recordatorio.texto,
                 style: TextStyle(
@@ -322,10 +326,7 @@ class RestauranteDetailScreen extends ConsumerWidget {
                       : null,
                 ),
               ),
-              onChanged: (value) => ref
-                  .read(recordatorioRepositoryProvider)
-                  .setHecho(recordatorio.id, value ?? false),
-              secondary: IconButton(
+              trailing: IconButton(
                 icon: const Icon(Icons.delete_outline),
                 tooltip: 'Eliminar recordatorio',
                 onPressed: () => _confirmarEliminarRecordatorio(
@@ -737,14 +738,7 @@ class _FilaInfo extends StatelessWidget {
         children: [
           Icon(icon, size: 17, color: accent.accentInk),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Work Sans',
-              fontSize: 13.5,
-              color: accent.inkSoft,
-            ),
-          ),
+          Text(label.toUpperCase(), style: AppTheme.kicker(accent)),
           const Spacer(),
           child,
         ],
@@ -799,6 +793,64 @@ class _BotonEditarVisitas extends StatelessWidget {
   }
 }
 
+/// Tappable stand-in for the "done" checkbox on a reminder row: an empty
+/// square outline that reveals a loose, hand-drawn tick (via
+/// [HandCheckPainter]) once [checked] is true, instead of Material's stock
+/// checkbox visual.
+class _HandCheckBox extends StatelessWidget {
+  final BrandAccentColors accent;
+  final bool checked;
+  final ValueChanged<bool> onChanged;
+
+  static const double _size = 22;
+  // Same ≥44dp minimum interactive area used elsewhere in this app (see
+  // `_BotonCircular` in home_screen.dart) — the 22px visual box alone sits
+  // below the recommended minimum touch target.
+  static const double _minTapSize = 44;
+
+  const _HandCheckBox({
+    required this.accent,
+    required this.checked,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      checked: checked,
+      label: 'Marcar como hecho',
+      child: GestureDetector(
+        onTap: () => onChanged(!checked),
+        child: SizedBox(
+          width: _minTapSize,
+          height: _minTapSize,
+          child: Center(
+            child: Container(
+              width: _size,
+              height: _size,
+              decoration: BoxDecoration(
+                border: Border.all(color: accent.inkSoft, width: 1.4),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Transform.rotate(
+                angle: -6 * 3.1415926535 / 180,
+                child: CustomPaint(
+                  size: const Size(_size, _size),
+                  painter: HandCheckPainter(
+                    checked: checked,
+                    color: accent.secondary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _EncabezadoSeccion extends StatelessWidget {
   final BrandAccentColors accent;
   final String titulo;
@@ -821,12 +873,7 @@ class _EncabezadoSeccion extends StatelessWidget {
       children: [
         Text(
           titulo,
-          style: TextStyle(
-            fontFamily: 'Newsreader',
-            fontWeight: FontWeight.w700,
-            fontSize: 19,
-            color: accent.strongText,
-          ),
+          style: AppTheme.titleSection.copyWith(color: accent.strongText),
         ),
         TextButton.icon(
           onPressed: onAccion,

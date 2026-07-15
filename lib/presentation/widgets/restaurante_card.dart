@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../domain/models/restaurante_resumen.dart';
 import 'foto_rayada.dart';
+import 'score_stamp.dart';
 import 'tag_chip.dart';
 
 /// Home list card — thumbnail variant: a small square photo (or the
@@ -25,7 +26,7 @@ class RestauranteCard extends StatelessWidget {
     final media = resumen.puntuacionMedia;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Material(
         color: accent.paperCard,
         borderRadius: BorderRadius.circular(20),
@@ -49,19 +50,19 @@ class RestauranteCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                         child: FotoRayada(
                           fotoPath: restaurante.fotoPath,
-                          width: 64,
-                          height: 64,
+                          width: 52,
+                          height: 52,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,38 +83,42 @@ class RestauranteCard extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 9,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: accent.amberTint,
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.star,
-                                        size: 14,
-                                        color: accent.rating,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        media == null
-                                            ? '—'
-                                            : media.toStringAsFixed(1),
-                                        style: TextStyle(
-                                          fontFamily: 'Newsreader',
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 13,
-                                          color: accent.strongText,
+                                if (media == null)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 9,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: accent.amberTint,
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.star,
+                                          size: 14,
+                                          color: accent.rating,
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '—',
+                                          style: TextStyle(
+                                            fontFamily: 'Newsreader',
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13,
+                                            color: accent.strongText,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                else
+                                  ScoreStamp(
+                                    media.toStringAsFixed(1),
+                                    accent: accent,
                                   ),
-                                ),
                               ],
                             ),
                             if (restaurante.ubicacion != null &&
@@ -149,7 +154,7 @@ class RestauranteCard extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [

@@ -7,7 +7,12 @@ import '../../core/theme/app_theme.dart';
 import '../../data/local/app_database.dart' show Restaurante;
 import '../../domain/models/estadisticas.dart';
 import '../providers/estadisticas_provider.dart';
+import '../providers/plato_providers.dart';
+import '../providers/restaurantes_provider.dart';
+import '../widgets/dashed_painter.dart';
+import '../widgets/notebook_lines.dart';
 import '../widgets/tag_chip.dart';
+import '../widgets/taped_card.dart';
 
 class EstadisticasScreen extends ConsumerWidget {
   const EstadisticasScreen({super.key});
@@ -17,60 +22,115 @@ class EstadisticasScreen extends ConsumerWidget {
     final estadisticasAsync = ref.watch(estadisticasProvider);
     final accent = Theme.of(context).extension<BrandAccentColors>()!;
 
+    // Same providers `estadisticasProvider` already aggregates internally —
+    // watched again here just to get the raw counts ("N sitios y M platos")
+    // for the hero subtitle, which the aggregate `Estadisticas` model
+    // doesn't expose directly (it only carries top-N rankings).
+    final restaurantesResumenAsync = ref.watch(restaurantesResumenProvider);
+    final platosTodosAsync = ref.watch(platosTodosProvider);
+    final numSitios = restaurantesResumenAsync.value?.length ?? 0;
+    final numPlatos = platosTodosAsync.value?.length ?? 0;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Estadísticas')),
-      body: estadisticasAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
-        data: (stats) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _HeroPuntuacion(accent: accent, media: stats.puntuacionGlobalMedia),
-            const SizedBox(height: 20),
-            _TarjetaSeccion(
-              accent: accent,
-              titulo: 'Más visitados',
-              child: _ListaMasVisitados(
+      body: NotebookLines(
+        accent: accent,
+        child: estadisticasAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(child: Text('Error: $error')),
+          data: (stats) => ListView(
+            padding: const EdgeInsets.fromLTRB(56, 16, 16, 16),
+            children: [
+              TapedCard(
                 accent: accent,
-                items: stats.masVisitados,
+                colorCinta: accent.accent.withValues(alpha: 0.55),
+                colorCintaSecundaria: accent.secondary.withValues(alpha: 0.5),
+                child: Column(
+                  children: [
+                    _HeroPuntuacion(
+                      accent: accent,
+                      media: stats.puntuacionGlobalMedia,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'sobre $numSitios ${_pluralizar(numSitios, 'sitio', 'sitios')} '
+                      'y $numPlatos ${_pluralizar(numPlatos, 'plato', 'platos')}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Caveat',
+                        fontSize: 19,
+                        fontWeight: FontWeight.w600,
+                        color: accent.inkSoft,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            _TarjetaSeccion(
-              accent: accent,
-              titulo: 'Mejor valorados',
-              child: _ListaRanking(accent: accent, items: stats.mejorValorados),
-            ),
-            const SizedBox(height: 16),
-            _TarjetaSeccion(
-              accent: accent,
-              titulo: 'Platos más repetidos',
-              child: _ListaPlatosRepetidos(
+              const SizedBox(height: 20),
+              TapedCard(
                 accent: accent,
-                items: stats.platosMasRepetidos,
+                fondoPergamino: false,
+                padding: EdgeInsets.zero,
+                colorCinta: accent.accent.withValues(alpha: 0.5),
+                child: _TarjetaSeccion(
+                  accent: accent,
+                  titulo: 'Más visitados',
+                  child: _ListaMasVisitados(
+                    accent: accent,
+                    items: stats.masVisitados,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            _TarjetaSeccion(
-              accent: accent,
-              titulo: 'Restaurantes por ubicación',
-              child: _ListaPorUbicacion(
+              const SizedBox(height: 16),
+              TapedCard(
                 accent: accent,
-                porUbicacion: stats.porUbicacion,
+                fondoPergamino: false,
+                padding: EdgeInsets.zero,
+                colorCinta: accent.secondary.withValues(alpha: 0.5),
+                child: _TarjetaSeccion(
+                  accent: accent,
+                  titulo: 'Mejor valorados',
+                  child: _ListaRanking(
+                    accent: accent,
+                    items: stats.mejorValorados,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            _TarjetaSeccion(
-              accent: accent,
-              titulo: 'Tags más usados',
-              child: _ListaTags(accent: accent, items: stats.tagsMasUsados),
-            ),
-          ],
+              const SizedBox(height: 16),
+              _TarjetaSeccion(
+                accent: accent,
+                titulo: 'Platos más repetidos',
+                child: _ListaPlatosRepetidos(
+                  accent: accent,
+                  items: stats.platosMasRepetidos,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _TarjetaSeccion(
+                accent: accent,
+                titulo: 'Restaurantes por ubicación',
+                child: _ListaPorUbicacion(
+                  accent: accent,
+                  porUbicacion: stats.porUbicacion,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _TarjetaSeccion(
+                accent: accent,
+                titulo: 'Tags más usados',
+                child: _ListaTags(accent: accent, items: stats.tagsMasUsados),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
+/// Spanish pluralizer for the hero subtitle counts — "1 sitio" vs "3 sitios".
+String _pluralizar(int cantidad, String singular, String plural) =>
+    cantidad == 1 ? singular : plural;
 
 class _HeroPuntuacion extends StatelessWidget {
   final BrandAccentColors accent;
@@ -173,12 +233,7 @@ class _TarjetaSeccion extends StatelessWidget {
         children: [
           Text(
             titulo,
-            style: TextStyle(
-              fontFamily: 'Newsreader',
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-              color: accent.strongText,
-            ),
+            style: AppTheme.titleSection.copyWith(color: accent.strongText),
           ),
           const SizedBox(height: 12),
           child,
@@ -205,7 +260,10 @@ class _EstadoVacio extends StatelessWidget {
               width: 56,
               height: 56,
               child: CustomPaint(
-                painter: _CirculoPunteadoPainter(color: accent.border),
+                painter: DashedPathPainter.circle(
+                  color: accent.border,
+                  diameter: 56,
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -269,20 +327,66 @@ class _ListaMasVisitados extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(100),
-                  child: LinearProgressIndicator(
-                    value: maximo == 0 ? 0 : item.valor / maximo,
-                    minHeight: 6,
-                    backgroundColor: accent.paperCardAlt,
-                    color: accent.accent,
-                  ),
+                const SizedBox(height: 8),
+                _BarraVisita(
+                  accent: accent,
+                  fraccion: maximo == 0 ? 0 : item.valor / maximo,
                 ),
               ],
             ),
           ),
       ],
+    );
+  }
+}
+
+/// A hand-sketched-looking bar: a thin baseline rule with a skewed,
+/// asymmetrically-rounded fill on top of it, in place of a plain
+/// [LinearProgressIndicator] — same proportional-width data logic
+/// (`fraccion` = value / max), just a different visual treatment.
+class _BarraVisita extends StatelessWidget {
+  final BrandAccentColors accent;
+  final double fraccion;
+
+  const _BarraVisita({required this.accent, required this.fraccion});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 10,
+      child: Stack(
+        alignment: Alignment.bottomLeft,
+        children: [
+          Container(height: 1.2, color: accent.paperRule),
+          FractionallySizedBox(
+            widthFactor: fraccion.clamp(0.0, 1.0),
+            alignment: Alignment.centerLeft,
+            child: Transform(
+              alignment: Alignment.centerLeft,
+              transform: Matrix4.skewX(-8 * math.pi / 180),
+              child: Container(
+                height: 7,
+                decoration: BoxDecoration(
+                  color: accent.accent,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(2),
+                    topRight: Radius.circular(6),
+                    bottomLeft: Radius.circular(5),
+                    bottomRight: Radius.circular(3),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accent.shadow,
+                      blurRadius: 2.5,
+                      offset: const Offset(0, 1.5),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -300,30 +404,25 @@ class _ListaRanking extends StatelessWidget {
     }
     return Column(
       children: [
-        for (var i = 0; i < items.length; i++)
+        for (var i = 0; i < items.length; i++) ...[
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(
               children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: accent.paperCardAlt,
-                  ),
+                SizedBox(
+                  width: 28,
                   child: Text(
                     '${i + 1}',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: 'Work Sans',
-                      fontSize: 11.5,
+                      fontFamily: 'Caveat',
+                      fontSize: 26,
                       fontWeight: FontWeight.w600,
-                      color: accent.inkSoft,
+                      color: accent.accent,
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     items[i].restaurante.nombre,
@@ -358,6 +457,20 @@ class _ListaRanking extends StatelessWidget {
               ],
             ),
           ),
+          if (i != items.length - 1)
+            CustomPaint(
+              painter: DashedPathPainter(
+                color: accent.paperRule,
+                dashWidth: 4,
+                dashGap: 3,
+                strokeWidth: 1,
+                pathBuilder: (size) => Path()
+                  ..moveTo(0, size.height / 2)
+                  ..lineTo(size.width, size.height / 2),
+              ),
+              child: const SizedBox(width: double.infinity, height: 1),
+            ),
+        ],
       ],
     );
   }
@@ -494,40 +607,4 @@ class _ListaTags extends StatelessWidget {
       ],
     );
   }
-}
-
-/// Dashed-circle outline for the "no data yet" empty states.
-class _CirculoPunteadoPainter extends CustomPainter {
-  final Color color;
-
-  const _CirculoPunteadoPainter({required this.color});
-
-  static const int _dashCount = 24;
-  static const double _gapFraction = 0.5;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
-    final rect = Rect.fromCircle(
-      center: Offset(size.width / 2, size.height / 2),
-      radius: size.width / 2 - 1,
-    );
-    final anglePorTramo = 2 * math.pi / _dashCount;
-    for (var i = 0; i < _dashCount; i++) {
-      canvas.drawArc(
-        rect,
-        i * anglePorTramo,
-        anglePorTramo * (1 - _gapFraction),
-        false,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _CirculoPunteadoPainter oldDelegate) =>
-      oldDelegate.color != color;
 }

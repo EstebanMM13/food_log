@@ -13,6 +13,7 @@ import '../providers/plato_providers.dart';
 import '../providers/repository_providers.dart';
 import '../providers/restaurantes_provider.dart';
 import '../providers/theme_mode_provider.dart';
+import '../widgets/empty_note.dart';
 import '../widgets/intro_dialog.dart';
 import '../widgets/restaurante_card.dart';
 import 'estadisticas_screen.dart';
@@ -59,240 +60,257 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     };
     final esOscuroActualmente = brilloEfectivo == Brightness.dark;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Food Log',
-                          style: TextStyle(
-                            fontFamily: 'Newsreader',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 26,
-                            color: accent.accentInk,
-                          ),
-                        ),
-                        Text(
-                          'tu cuaderno de sabores',
-                          style: TextStyle(
-                            fontFamily: 'Caveat',
-                            fontSize: 19,
-                            fontWeight: FontWeight.w600,
-                            color: accent.inkSoft,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _BotonCircular(
-                    tooltip: esOscuroActualmente
-                        ? 'Cambiar a modo claro'
-                        : 'Cambiar a modo oscuro',
-                    icon: esOscuroActualmente
-                        ? Icons.light_mode
-                        : Icons.dark_mode,
-                    accent: accent,
-                    onPressed: () => ref
-                        .read(themeModeProvider.notifier)
-                        .toggle(brilloEfectivo),
-                  ),
-                  const SizedBox(width: 8),
-                  _BotonCircular(
-                    tooltip: 'Estadísticas',
-                    icon: Icons.bar_chart,
-                    accent: accent,
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const EstadisticasScreen(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _MenuOpciones(
-                    accent: accent,
-                    onSelected: (accion) {
-                      switch (accion) {
-                        case _DatosAction.exportar:
-                          _exportarDatos();
-                        case _DatosAction.importar:
-                          _importarDatos();
-                        case _DatosAction.informacion:
-                          mostrarDialogoIntro(context, ref);
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _BuscadorPill(
-                      accent: accent,
-                      onChanged: (value) => setState(
-                        () => _busqueda = value.trim().toLowerCase(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _MenuOrden(
-                    accent: accent,
-                    ordenActual: _orden,
-                    onSelected: (orden) => setState(() => _orden = orden),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Text(
-                      'Restaurantes',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'Newsreader',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 21,
-                        color: accent.strongText,
-                      ),
-                    ),
-                  ),
-                  if (resumenAsync.value != null)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Transform.rotate(
-                        angle: -2 * math.pi / 180,
-                        child: Text(
-                          '${resumenAsync.value!.length} guardados',
-                          style: TextStyle(
-                            fontFamily: 'Caveat',
-                            fontSize: 21,
-                            fontWeight: FontWeight.w600,
-                            color: accent.inkSoft,
-                          ),
+    return Stack(
+      children: [
+        Scaffold(
+          body: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Food Log',
+                              style: AppTheme.titleScreen.copyWith(
+                                color: accent.accentInk,
+                              ),
+                            ),
+                            Text(
+                              'tu cuaderno de sabores',
+                              style: TextStyle(
+                                fontFamily: 'Caveat',
+                                fontSize: 19,
+                                fontWeight: FontWeight.w600,
+                                color: accent.inkSoft,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 4),
-            Expanded(
-              child: resumenAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(child: Text('Error: $error')),
-                data: (resumen) {
-                  final platosPorRestaurante = <String, List<String>>{};
-                  for (final plato in platosAsync.value ?? const []) {
-                    platosPorRestaurante
-                        .putIfAbsent(plato.restauranteId, () => [])
-                        .add(plato.nombre.toLowerCase());
-                  }
-
-                  final filtrados = _busqueda.isEmpty
-                      ? resumen
-                      : resumen.where((r) {
-                          final nombre = r.restaurante.nombre.toLowerCase();
-                          final ubicacion =
-                              r.restaurante.ubicacion?.toLowerCase() ?? '';
-                          final tags = r.tags.map(
-                            (t) => t.nombre.toLowerCase(),
-                          );
-                          final platos =
-                              platosPorRestaurante[r.restaurante.id] ??
-                              const [];
-                          return nombre.contains(_busqueda) ||
-                              ubicacion.contains(_busqueda) ||
-                              tags.any((t) => t.contains(_busqueda)) ||
-                              platos.any((p) => p.contains(_busqueda));
-                        }).toList();
-
-                  filtrados.sort((a, b) {
-                    switch (_orden) {
-                      case _OrdenRestaurantes.alfabetico:
-                        return a.restaurante.nombre.toLowerCase().compareTo(
-                          b.restaurante.nombre.toLowerCase(),
-                        );
-                      case _OrdenRestaurantes.alfabeticoInverso:
-                        return b.restaurante.nombre.toLowerCase().compareTo(
-                          a.restaurante.nombre.toLowerCase(),
-                        );
-                      case _OrdenRestaurantes.mejorValorados:
-                        return _compararPorNota(a, b, descendente: true);
-                      case _OrdenRestaurantes.peorValorados:
-                        return _compararPorNota(a, b, descendente: false);
-                      case _OrdenRestaurantes.masVisitados:
-                        return b.restaurante.visitas.compareTo(
-                          a.restaurante.visitas,
-                        );
-                      case _OrdenRestaurantes.menosVisitados:
-                        return a.restaurante.visitas.compareTo(
-                          b.restaurante.visitas,
-                        );
-                    }
-                  });
-
-                  if (filtrados.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'No hay restaurantes que coincidan.',
-                        style: TextStyle(
-                          fontFamily: 'Work Sans',
-                          color: accent.inkSoft,
-                        ),
+                      _BotonCircular(
+                        tooltip: esOscuroActualmente
+                            ? 'Cambiar a modo claro'
+                            : 'Cambiar a modo oscuro',
+                        icon: esOscuroActualmente
+                            ? Icons.light_mode
+                            : Icons.dark_mode,
+                        accent: accent,
+                        onPressed: () => ref
+                            .read(themeModeProvider.notifier)
+                            .toggle(brilloEfectivo),
                       ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.only(top: 4, bottom: 88),
-                    itemCount: filtrados.length,
-                    itemBuilder: (context, index) {
-                      final item = filtrados[index];
-                      return RestauranteCard(
-                        resumen: item,
-                        onTap: () => Navigator.of(context).push(
+                      const SizedBox(width: 8),
+                      _BotonCircular(
+                        tooltip: 'Estadísticas',
+                        icon: Icons.bar_chart,
+                        accent: accent,
+                        onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => RestauranteDetailScreen(
-                              restauranteId: item.restaurante.id,
+                            builder: (_) => const EstadisticasScreen(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _MenuOpciones(
+                        accent: accent,
+                        onSelected: (accion) {
+                          switch (accion) {
+                            case _DatosAction.exportar:
+                              _exportarDatos();
+                            case _DatosAction.importar:
+                              _importarDatos();
+                            case _DatosAction.informacion:
+                              mostrarDialogoIntro(context, ref);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _BuscadorPill(
+                          accent: accent,
+                          onChanged: (value) => setState(
+                            () => _busqueda = value.trim().toLowerCase(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _MenuOrden(
+                        accent: accent,
+                        ordenActual: _orden,
+                        onSelected: (orden) => setState(() => _orden = orden),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'Restaurantes',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTheme.titleSection.copyWith(
+                            color: accent.strongText,
+                          ),
+                        ),
+                      ),
+                      if (resumenAsync.value != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Transform.rotate(
+                            angle: -2 * math.pi / 180,
+                            child: Text(
+                              '${resumenAsync.value!.length} guardados',
+                              style: TextStyle(
+                                fontFamily: 'Caveat',
+                                fontSize: 21,
+                                fontWeight: FontWeight.w600,
+                                color: accent.inkSoft,
+                              ),
                             ),
                           ),
                         ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Expanded(
+                  child: resumenAsync.when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) =>
+                        Center(child: Text('Error: $error')),
+                    data: (resumen) {
+                      final platosPorRestaurante = <String, List<String>>{};
+                      for (final plato in platosAsync.value ?? const []) {
+                        platosPorRestaurante
+                            .putIfAbsent(plato.restauranteId, () => [])
+                            .add(plato.nombre.toLowerCase());
+                      }
+
+                      final filtrados = _busqueda.isEmpty
+                          ? resumen
+                          : resumen.where((r) {
+                              final nombre = r.restaurante.nombre.toLowerCase();
+                              final ubicacion =
+                                  r.restaurante.ubicacion?.toLowerCase() ?? '';
+                              final tags = r.tags.map(
+                                (t) => t.nombre.toLowerCase(),
+                              );
+                              final platos =
+                                  platosPorRestaurante[r.restaurante.id] ??
+                                  const [];
+                              return nombre.contains(_busqueda) ||
+                                  ubicacion.contains(_busqueda) ||
+                                  tags.any((t) => t.contains(_busqueda)) ||
+                                  platos.any((p) => p.contains(_busqueda));
+                            }).toList();
+
+                      filtrados.sort((a, b) {
+                        switch (_orden) {
+                          case _OrdenRestaurantes.alfabetico:
+                            return a.restaurante.nombre.toLowerCase().compareTo(
+                              b.restaurante.nombre.toLowerCase(),
+                            );
+                          case _OrdenRestaurantes.alfabeticoInverso:
+                            return b.restaurante.nombre.toLowerCase().compareTo(
+                              a.restaurante.nombre.toLowerCase(),
+                            );
+                          case _OrdenRestaurantes.mejorValorados:
+                            return _compararPorNota(a, b, descendente: true);
+                          case _OrdenRestaurantes.peorValorados:
+                            return _compararPorNota(a, b, descendente: false);
+                          case _OrdenRestaurantes.masVisitados:
+                            return b.restaurante.visitas.compareTo(
+                              a.restaurante.visitas,
+                            );
+                          case _OrdenRestaurantes.menosVisitados:
+                            return a.restaurante.visitas.compareTo(
+                              b.restaurante.visitas,
+                            );
+                        }
+                      });
+
+                      if (resumen.isEmpty) {
+                        return const Center(
+                          child: EmptyNote(
+                            text:
+                                'Tu cuaderno está en blanco. '
+                                'Añade el primer sitio.',
+                          ),
+                        );
+                      }
+
+                      if (filtrados.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No hay restaurantes que coincidan.',
+                            style: TextStyle(
+                              fontFamily: 'Work Sans',
+                              color: accent.inkSoft,
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        padding: const EdgeInsets.only(top: 4, bottom: 88),
+                        itemCount: filtrados.length,
+                        itemBuilder: (context, index) {
+                          final item = filtrados[index];
+                          return RestauranteCard(
+                            resumen: item,
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => RestauranteDetailScreen(
+                                  restauranteId: item.restaurante.id,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Añadir restaurante',
-        backgroundColor: accent.accent,
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const RestauranteFormScreen()),
+        // Deliberately outside the Scaffold's floatingActionButton slot (which
+        // insets safely above the bottom edge) — Positioned here lets the tab
+        // poke out past the SafeArea-wrapped body, like a page-marker
+        // sticking out of a notebook. Offset by the system's bottom inset
+        // (not a fixed negative value) so it never lands under a 3-button
+        // nav bar or a gesture-navigation exclusion zone, where it could be
+        // unreachable or invisible — this is the app's only "add
+        // restaurant" entry point.
+        Positioned(
+          bottom: MediaQuery.paddingOf(context).bottom,
+          right: 20,
+          child: _NuevoTab(
+            accent: accent,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const RestauranteFormScreen()),
+            ),
+          ),
         ),
-        // Ink (not white) on the terracotta fill, same AA-contrast fix as
-        // `elevatedButtonTheme` in app_theme.dart — white-on-terracotta
-        // falls below WCAG AA (~2.57:1) in dark mode.
-        child: const _SpoonForkIcon(color: AppTheme.brandNavy),
-      ),
+      ],
     );
   }
 
@@ -555,7 +573,10 @@ class _MenuOrden extends StatelessWidget {
   }
 }
 
-/// Search pill: 48px tall, radius 24, `paperCard` fill and `border` outline.
+/// Search field styled as an underlined writing line — no fill or full
+/// border, just a single ruled underline (`accent.border`), like handwriting
+/// on notebook paper. Hint and typed input both use the same legible Work
+/// Sans style — a cursive hint read poorly at this size.
 class _BuscadorPill extends StatelessWidget {
   final BrandAccentColors accent;
   final ValueChanged<String> onChanged;
@@ -567,25 +588,23 @@ class _BuscadorPill extends StatelessWidget {
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: accent.paperCard,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: accent.border),
+        border: Border(bottom: BorderSide(color: accent.border, width: 1.5)),
       ),
       child: TextField(
         onChanged: onChanged,
         style: TextStyle(
           fontFamily: 'Work Sans',
-          fontSize: 14.5,
+          fontSize: 13,
           color: accent.strongText,
         ),
         decoration: InputDecoration(
-          hintText: 'Buscar restaurante, plato o zona',
+          hintText: 'buscar un sitio, un plato…',
           hintStyle: TextStyle(
             fontFamily: 'Work Sans',
-            fontSize: 14.5,
+            fontSize: 13,
             color: accent.inkSoft,
           ),
-          prefixIcon: Icon(Icons.search, size: 20, color: accent.inkSoft),
+          prefixIcon: Icon(Icons.search, size: 15, color: accent.inkSoft),
           border: InputBorder.none,
           isCollapsed: true,
           contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -623,70 +642,89 @@ int _compararPorNota(
   return descendente ? notaB.compareTo(notaA) : notaA.compareTo(notaB);
 }
 
-/// Spoon+fork glyph from the app logo's circular badge, echoing the brand
-/// mark on the "add restaurant" FAB instead of a generic "+".
-class _SpoonForkIcon extends StatelessWidget {
-  final Color color;
+/// Bookmark-tab "add restaurant" trigger. Deliberately positioned outside
+/// the [Scaffold]'s safe content area (see the [Positioned] wrapper in
+/// [_HomeScreenState.build]) so it visually pokes out past the bottom-right
+/// edge of the screen, like a page-marker tab sticking out of a notebook.
+class _NuevoTab extends StatelessWidget {
+  final BrandAccentColors accent;
+  final VoidCallback onPressed;
 
-  const _SpoonForkIcon({required this.color});
+  static const double _width = 54;
+  static const double _height = 70;
+
+  const _NuevoTab({required this.accent, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 22,
-      height: 22,
-      child: CustomPaint(painter: _SpoonForkPainter(color)),
+      width: _width,
+      height: _height,
+      child: Tooltip(
+        message: 'Añadir restaurante',
+        child: ClipPath(
+          clipper: const _BookmarkTabClipper(),
+          child: Material(
+            color: accent.accent,
+            child: InkWell(
+              onTap: onPressed,
+              // Ink (not white) on the terracotta fill, same AA-contrast fix
+              // as `elevatedButtonTheme` in app_theme.dart — white-on-terracotta
+              // falls below WCAG AA (~2.57:1) in dark mode.
+              child: const Align(
+                alignment: Alignment(0, -0.3),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add, size: 17, color: AppTheme.brandNavy),
+                    SizedBox(height: 2),
+                    Text(
+                      'nuevo',
+                      style: TextStyle(
+                        fontFamily: 'Caveat',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.brandNavy,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
 
-class _SpoonForkPainter extends CustomPainter {
-  final Color color;
-
-  const _SpoonForkPainter(this.color);
+/// Clips a "bookmark tab" shape for [_NuevoTab] — a rounded-top rectangle
+/// with a curved notch cut into the bottom-center, forming two rounded
+/// "legs" flanking the notch, like a ribbon-tail page marker.
+class _BookmarkTabClipper extends CustomClipper<Path> {
+  const _BookmarkTabClipper();
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.09
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
+  Path getClip(Size size) {
     final w = size.width;
     final h = size.height;
+    const topRadius = 16.0;
+    final notchDepth = h * 0.32;
+    final notchHalfWidth = w * 0.24;
+    final midX = w / 2;
 
-    // Spoon: an oval bowl with a stem down to the fork's stem baseline.
-    final bowl = Rect.fromCenter(
-      center: Offset(w * 0.28, h * 0.28),
-      width: w * 0.26,
-      height: h * 0.34,
-    );
-    canvas.drawOval(bowl, paint);
-    canvas.drawLine(
-      Offset(w * 0.28, h * 0.45),
-      Offset(w * 0.28, h * 0.88),
-      paint,
-    );
-
-    // Fork: three tines merging into a single stem.
-    for (final tx in [0.62, 0.72, 0.82]) {
-      canvas.drawLine(Offset(w * tx, h * 0.12), Offset(w * tx, h * 0.42), paint);
-    }
-    canvas.drawLine(
-      Offset(w * 0.62, h * 0.42),
-      Offset(w * 0.82, h * 0.42),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(w * 0.72, h * 0.42),
-      Offset(w * 0.72, h * 0.88),
-      paint,
-    );
+    return Path()
+      ..moveTo(0, topRadius)
+      ..quadraticBezierTo(0, 0, topRadius, 0)
+      ..lineTo(w - topRadius, 0)
+      ..quadraticBezierTo(w, 0, w, topRadius)
+      ..lineTo(w, h)
+      ..lineTo(midX + notchHalfWidth, h)
+      ..quadraticBezierTo(midX, h - notchDepth, midX - notchHalfWidth, h)
+      ..lineTo(0, h)
+      ..close();
   }
 
   @override
-  bool shouldRepaint(covariant _SpoonForkPainter oldDelegate) =>
-      oldDelegate.color != color;
+  bool shouldReclip(covariant _BookmarkTabClipper oldClipper) => false;
 }

@@ -46,10 +46,11 @@ void main() {
 
     expect(find.text('Camelot'), findsOneWidget);
     expect(find.text('Español'), findsOneWidget);
-    // "Platos" appears twice: the section heading and the label of the
-    // "principales" category card underneath it.
-    expect(find.text('Platos'), findsNWidgets(2));
-    expect(find.text('Entrantes'), findsOneWidget);
+    // The section heading reads "Platos"; the "principales" category card
+    // underneath it renders its label as an uppercase kicker ("PLATOS").
+    expect(find.text('Platos'), findsOneWidget);
+    expect(find.text('PLATOS'), findsOneWidget);
+    expect(find.text('ENTRANTES'), findsOneWidget);
 
     await db.close();
   });

@@ -38,10 +38,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Entrantes'), findsOneWidget);
+    expect(find.text('ENTRANTES'), findsOneWidget);
     expect(find.text('Patatas bravas'), findsNothing); // collapsed by default.
 
-    await tester.tap(find.text('Entrantes'));
+    await tester.tap(find.text('ENTRANTES'));
     await tester.pumpAndSettle();
 
     expect(find.text('Patatas bravas'), findsOneWidget);
@@ -62,7 +62,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Entrantes'));
+    await tester.tap(find.text('ENTRANTES'));
     await tester.pumpAndSettle();
 
     // The row's own comment button ("ver comentario") is enabled and opens

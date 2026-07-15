@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../data/local/app_database.dart';
 import '../../domain/tipo_plato.dart';
 import '../screens/plato_form_screen.dart';
+import 'dashed_painter.dart';
 import 'plato_detail_modal.dart';
 
 /// Collapsible category card shown in the restaurant detail screen
@@ -102,13 +103,8 @@ class _CategoriaPlatosSectionState extends State<CategoriaPlatosSection> {
                 children: [
                   Expanded(
                     child: Text(
-                      widget.label,
-                      style: TextStyle(
-                        fontFamily: 'Work Sans',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                        color: accent.strongText,
-                      ),
+                      widget.label.toUpperCase(),
+                      style: AppTheme.kicker(accent),
                     ),
                   ),
                   Container(
@@ -192,7 +188,7 @@ class _FilaAnadirPlato extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: CustomPaint(
-        painter: _BordeDiscontinuoPainter(color: accent.border),
+        painter: DashedPathPainter.roundedRect(color: accent.border),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
@@ -215,48 +211,6 @@ class _FilaAnadirPlato extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Dashed rounded-rect border for the "Añadir plato" row — Flutter has no
-/// built-in dashed `BoxBorder`, and pulling in a package for one outline
-/// felt heavier than a ~15-line painter.
-class _BordeDiscontinuoPainter extends CustomPainter {
-  final Color color;
-
-  const _BordeDiscontinuoPainter({required this.color});
-
-  static const double _dashWidth = 5;
-  static const double _dashGap = 4;
-  static const double _radius = 10;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rrect = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      const Radius.circular(_radius),
-    );
-    final path = Path()..addRRect(rrect);
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        final siguiente = distance + _dashWidth;
-        canvas.drawPath(
-          metric.extractPath(distance, siguiente.clamp(0, metric.length)),
-          paint,
-        );
-        distance = siguiente + _dashGap;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _BordeDiscontinuoPainter oldDelegate) =>
-      oldDelegate.color != color;
 }
 
 class _PlatoRow extends StatelessWidget {
