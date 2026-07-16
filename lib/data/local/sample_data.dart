@@ -102,7 +102,7 @@ class _PlatoMuestra {
 
 const _restaurantesDeMuestra = [
   _RestauranteMuestra(
-    nombre: 'La Pepica',
+    nombre: 'Casa Marina',
     ubicacion: 'Valencia',
     visitas: 4,
     tags: ['Arrocería', 'Playa'],
@@ -131,10 +131,10 @@ const _restaurantesDeMuestra = [
         'assets/sample_photos/La Pepica/sangria.webp',
       ),
     ],
-    fotoAsset: 'assets/sample_photos/plato_01.jpg',
+    fotoAsset: 'assets/sample_photos/casa_marina.jpg',
   ),
   _RestauranteMuestra(
-    nombre: 'Casa Montaña',
+    nombre: 'Casa Paco',
     ubicacion: 'El Cabanyal, Valencia',
     visitas: 2,
     tags: ['Tapas', 'Vinos'],
@@ -163,10 +163,10 @@ const _restaurantesDeMuestra = [
         'assets/sample_photos/Casa Montaña/torrija.webp',
       ),
     ],
-    fotoAsset: 'assets/sample_photos/plato_02.jpg',
+    fotoAsset: 'assets/sample_photos/casa_paco.jpg',
   ),
   _RestauranteMuestra(
-    nombre: 'El Portal',
+    nombre: 'El Timón',
     ubicacion: 'Alicante',
     visitas: 3,
     tags: ['Marisco', 'Arrocería'],
@@ -195,10 +195,10 @@ const _restaurantesDeMuestra = [
       ),
       _PlatoMuestra('Coca de llanda', 'Postre', 7.6),
     ],
-    fotoAsset: 'assets/sample_photos/plato_03.jpg',
+    fotoAsset: 'assets/sample_photos/el_timon.jpg',
   ),
   _RestauranteMuestra(
-    nombre: 'Restaurante Marítim',
+    nombre: 'Restaurante Costa Azul',
     ubicacion: 'Grao de Castellón',
     visitas: 1,
     tags: ['Playa', 'Marisco'],
@@ -227,10 +227,10 @@ const _restaurantesDeMuestra = [
       ),
       _PlatoMuestra('Flan de naranja', 'Postre', 7.7),
     ],
-    fotoAsset: 'assets/sample_photos/plato_04.jpg',
+    fotoAsset: 'assets/sample_photos/restaurante_costa_azul.jpg',
   ),
   _RestauranteMuestra(
-    nombre: "L'Estanc",
+    nombre: 'La Terraza del Sol',
     ubicacion: 'Gandía',
     visitas: 5,
     tags: ['Tapas', 'Terraza'],
@@ -259,6 +259,6 @@ const _restaurantesDeMuestra = [
       ),
       _PlatoMuestra('Vermut de grifo', 'Otro', 7.3),
     ],
-    fotoAsset: 'assets/sample_photos/plato_05.jpg',
+    fotoAsset: 'assets/sample_photos/la_terraza_del_sol.jpg',
   ),
 ];

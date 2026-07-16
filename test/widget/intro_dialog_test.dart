@@ -78,7 +78,7 @@ void main() {
     }
     await tester.pumpAndSettle();
 
-    expect(find.text('La Pepica'), findsOneWidget);
+    expect(find.text('Casa Marina'), findsOneWidget);
     expect(prefs.getBool('intro_dismissed'), isTrue);
 
     await db.close();
