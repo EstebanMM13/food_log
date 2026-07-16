@@ -10,9 +10,7 @@ import '../providers/plato_providers.dart';
 import '../providers/recordatorio_providers.dart';
 import '../providers/repository_providers.dart';
 import '../providers/restaurantes_provider.dart';
-import '../widgets/caja_notas.dart';
 import '../widgets/categoria_platos_section.dart';
-import '../widgets/empty_note.dart';
 import '../widgets/foto_rayada.dart';
 import '../widgets/foto_thumbnail.dart';
 import '../widgets/hand_check_painter.dart';
@@ -198,27 +196,10 @@ class RestauranteDetailScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 28),
-          _EncabezadoSeccion(
+          _SeccionNotas(
             accent: accent,
-            titulo: 'Notas',
-            accionTexto: 'Editar',
-            accionIcono: Icons.edit,
-            onAccion: () => _editarNotas(context, ref, restaurante!, tags),
-          ),
-          const SizedBox(height: 8),
-          CajaNotas(
-            child: restaurante.notas != null && restaurante.notas!.isNotEmpty
-                ? Text(
-                    restaurante.notas!,
-                    style: TextStyle(
-                      fontFamily: 'Work Sans',
-                      fontSize: 14,
-                      color: accent.strongText,
-                    ),
-                  )
-                : const EmptyNote(
-                    text: 'Sin notas todavía. Toca para escribir la primera.',
-                  ),
+            notas: restaurante.notas,
+            onEditar: () => _editarNotas(context, ref, restaurante!, tags),
           ),
           const SizedBox(height: 28),
           Text(
@@ -766,6 +747,7 @@ class _BotonEditarVisitas extends StatelessWidget {
       color: Colors.transparent,
       shape: const CircleBorder(),
       child: InkWell(
+        key: const Key('editar-visitas-button'),
         customBorder: const CircleBorder(),
         onTap: onPressed,
         child: SizedBox(
@@ -847,6 +829,84 @@ class _HandCheckBox extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Restaurant "Notas" section. Unlike other sections, it has no separate
+/// header + card: when empty it collapses to a single tappable prompt row
+/// (no card background), and when filled it shows a compact kicker + inline
+/// edit button above the handwritten note text — no surrounding container.
+class _SeccionNotas extends StatelessWidget {
+  final BrandAccentColors accent;
+  final String? notas;
+  final VoidCallback onEditar;
+
+  const _SeccionNotas({
+    required this.accent,
+    required this.notas,
+    required this.onEditar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final notas = this.notas;
+    if (notas == null || notas.isEmpty) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: accent.border, width: 1.5)),
+        ),
+        child: InkWell(
+          onTap: onEditar,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              children: [
+                Icon(Icons.edit_outlined, size: 15, color: accent.inkSoft),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Añadir una nota…',
+                    style: TextStyle(
+                      fontFamily: 'Caveat',
+                      fontSize: 18,
+                      color: accent.inkSoft,
+                    ),
+                  ),
+                ),
+                Icon(Icons.add, size: 18, color: accent.inkSoft),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: Text('NOTAS', style: AppTheme.kicker(accent))),
+            IconButton(
+              icon: Icon(Icons.edit, size: 17, color: accent.accentInk),
+              visualDensity: VisualDensity.compact,
+              onPressed: onEditar,
+              tooltip: 'Editar',
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          notas,
+          style: TextStyle(
+            fontFamily: 'Work Sans',
+            fontSize: 15,
+            color: accent.strongText,
+            height: 1.4,
+          ),
+        ),
+      ],
     );
   }
 }

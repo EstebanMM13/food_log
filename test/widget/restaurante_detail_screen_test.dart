@@ -81,7 +81,10 @@ void main() {
 
       expect(find.text('3'), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.edit_outlined));
+      // The Notas section also renders an `edit_outlined` icon (its empty
+      // "Añadir una nota…" prompt row), so a plain `find.byIcon` is now
+      // ambiguous. Disambiguate via the button's own key.
+      await tester.tap(find.byKey(const Key('editar-visitas-button')));
       await tester.pumpAndSettle();
 
       expect(find.text('Corregir visitas'), findsOneWidget);

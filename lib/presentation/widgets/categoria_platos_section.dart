@@ -5,6 +5,7 @@ import '../../data/local/app_database.dart';
 import '../../domain/tipo_plato.dart';
 import '../screens/plato_form_screen.dart';
 import 'dashed_painter.dart';
+import 'dish_score.dart';
 import 'plato_detail_modal.dart';
 
 /// Collapsible category card shown in the restaurant detail screen
@@ -116,22 +117,17 @@ class _CategoriaPlatosSectionState extends State<CategoriaPlatosSection> {
                       color: accent.amberTint,
                       borderRadius: BorderRadius.circular(100),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.star, size: 14, color: accent.rating),
-                        const SizedBox(width: 4),
-                        Text(
-                          media == null ? '—' : media.toStringAsFixed(1),
-                          style: TextStyle(
-                            fontFamily: 'Newsreader',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                            color: accent.strongText,
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: media == null
+                        ? Text(
+                            '—',
+                            style: TextStyle(
+                              fontFamily: 'Newsreader',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              color: accent.inkSoft,
+                            ),
+                          )
+                        : DishScore(media.toStringAsFixed(1), accent: accent),
                   ),
                   if (widget.onEliminarCategoria != null)
                     IconButton(
@@ -152,10 +148,10 @@ class _CategoriaPlatosSectionState extends State<CategoriaPlatosSection> {
           ),
           if (_expandido) ...[
             Divider(height: 1, color: accent.ruleLine),
-            for (final plato in widget.platos)
-              _PlatoRow(plato: plato, section: this),
+            // Kept at the top (rather than after the dish list) so it stays
+            // one tap away without scrolling past every dish already logged.
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
               child: _FilaAnadirPlato(
                 accent: accent,
                 onTap: () => Navigator.of(context).push(
@@ -169,6 +165,9 @@ class _CategoriaPlatosSectionState extends State<CategoriaPlatosSection> {
                 ),
               ),
             ),
+            for (final plato in widget.platos)
+              _PlatoRow(plato: plato, section: this),
+            const SizedBox(height: 8),
           ],
         ],
       ),
@@ -288,16 +287,8 @@ class _PlatoRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            Icon(Icons.star, size: 14, color: accent.rating),
-            const SizedBox(width: 3),
-            Text(
-              plato.puntuacion.toStringAsFixed(1),
-              style: TextStyle(
-                fontFamily: 'Work Sans',
-                fontSize: 13,
-                color: accent.inkSoft,
-              ),
-            ),
+            DishScore(plato.puntuacion.toStringAsFixed(1), accent: accent),
+            const SizedBox(width: 6),
             IconButton(
               icon: Icon(
                 _tieneComentario

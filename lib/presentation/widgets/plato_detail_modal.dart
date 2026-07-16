@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/local/app_database.dart';
 import 'caja_notas.dart';
+import 'dish_score.dart';
 import 'foto_rayada.dart';
 
 /// Read-only bottom sheet shown when tapping a dish row in the restaurant
@@ -82,24 +83,9 @@ class _PlatoDetailSheet extends StatelessWidget {
                   const SizedBox(height: 20),
                   Row(
                     children: [
-                      Icon(Icons.star, size: 20, color: accent.rating),
-                      const SizedBox(width: 6),
-                      Text(
+                      DishScore(
                         plato.puntuacion.toStringAsFixed(1),
-                        style: TextStyle(
-                          fontFamily: 'Newsreader',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20,
-                          color: accent.strongText,
-                        ),
-                      ),
-                      Text(
-                        ' /10',
-                        style: TextStyle(
-                          fontFamily: 'Work Sans',
-                          fontSize: 13,
-                          color: accent.inkSoft,
-                        ),
+                        accent: accent,
                       ),
                       const Spacer(),
                       Container(
